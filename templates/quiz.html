@@ -6,9 +6,26 @@
     <title>Quiz</title>
 </head>
 <body>
-    <h1>Quiz Page</h1>
-    <form action="/result" method="POST">
-        <!-- Add your quiz questions here -->
+    <h1>Quiz</h1>
+    
+    <form method="POST">
+        <!-- Add username input -->
+        <div>
+            <label for="username">Enter your username:</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+
+        <!-- Loop through questions and render dynamically -->
+        {% for i, question in enumerate(questions) %}
+        <div>
+            <p>{{ i+1 }}. {{ question.question_text }}</p>
+            <input type="radio" name="question-{{ i }}" value="A" required> {{ question.option_a }}<br>
+            <input type="radio" name="question-{{ i }}" value="B" required> {{ question.option_b }}<br>
+            <input type="radio" name="question-{{ i }}" value="C" required> {{ question.option_c }}<br>
+            <input type="radio" name="question-{{ i }}" value="D" required> {{ question.option_d }}<br>
+        </div>
+        {% endfor %}
+
         <button type="submit">Submit Quiz</button>
     </form>
 </body>

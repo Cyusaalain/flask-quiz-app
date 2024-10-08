@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Results</title>
+</head>
+<body>
+    <h1>Quiz Results for {{ session['username'] }}</h1>
+    <h2>Your Score: {{ score }}</h2>
+
+    <h3>Question Feedback:</h3>
+    <ul>
+        {% for answer in user_answers %}
+        <li>
+            <strong>Question:</strong> {{ answer.question }}<br>
+            <strong>Your Answer:</strong> {{ answer.user_answer }}<br>
+            {% if answer.correct %}
+            <strong>Correct!</strong><br>
+            {% else %}
+            <strong>Correct Answer:</strong> {{ answer.correct_answer }}<br>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+
+    <a href="/">Go Back to Home</a>
+</body>
+</html>

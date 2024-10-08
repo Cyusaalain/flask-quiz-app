@@ -1,11 +1,11 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, session, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+import random
 
 app = Flask(__name__)
-
-# Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///quizapp.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.secret_key = 'your_secret_key'  # For session management
 db = SQLAlchemy(app)
 
 # Define User, Quiz, and Question models
@@ -17,6 +17,7 @@ class User(db.Model):
 class Quiz(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
+    questions = db.relationship('Question', backref='quiz', lazy=True)
 
 class Question(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -33,10 +34,54 @@ class Question(db.Model):
 def home():
     return render_template('index.html')
 
-# Route for quiz page
-@app.route('/quiz')
+# Quiz route
+@app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
-    return render_template('quiz.html')
+    quiz = Quiz.query.first()
+    if quiz is None:
+        return "No quiz found in the database."
+    
+    questions = quiz.questions
+    if not questions:
+        return "No questions found for this quiz."
+
+    random.shuffle(questions)
+    
+    return render_template('quiz.html', questions=questions)
+
+    if request.method == 'POST':
+        session['username'] = request.form['username']  # Store username in session
+        
+        user_answers = []
+        score = 0
+
+        for i, q in enumerate(questions):
+            user_answer = request.form.get(f'question-{i}')
+            correct = user_answer == q.correct_answer
+            user_answers.append({
+                'question': q.question_text,
+                'correct': correct,
+                'user_answer': user_answer,
+                'correct_answer': q.correct_answer
+            })
+            if correct:
+                score += 1
+
+        # Save or update the user's score in the database
+        user = User.query.filter_by(username=session['username']).first()
+        if not user:
+            user = User(username=session['username'], score=score)
+            db.session.add(user)
+        else:
+            if score > user.score:
+                user.score = score
+
+        db.session.commit()
+
+        return render_template('result.html', score=score, user_answers=user_answers)
+
+    return render_template('quiz.html', questions=questions)
 
 if __name__ == '__main__':
+    db.create_all()
     app.run(debug=True)
