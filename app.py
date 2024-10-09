@@ -79,7 +79,7 @@ def quiz():
 
         return render_template('result.html', score=score, user_answers=user_answers)
 
-    return render_template('quiz.html', questions=questions)
+    return render_template('quiz.html', questions=questions, enumerate=enumerate)
 
 # This command ensures the database tables are created
 with app.app_context():
