@@ -3,31 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz</title>
+    <title>Quiz Page</title>
 </head>
 <body>
-    <h1>Quiz</h1>
-    
+    <h1>Quiz Page</h1>
+
+    <!-- Username Input -->
     <form method="POST">
-        <!-- Add username input -->
         <div>
-            <label for="username">Enter your username:</label>
+            <label for="username">Enter your name:</label>
             <input type="text" id="username" name="username" required>
         </div>
 
-        <!-- Loop through questions and render dynamically -->
-        {% for i, question in enumerate(questions) %}
+        <!-- Loop through the questions and display them -->
+        {% for index, question in enumerate(questions) %}
         <div>
             <h3>Question {{ index + 1 }}: {{ question.question_text }}</h3>
-            <p>{{ i+1 }}. {{ question.question_text }}</p>
-            <input type="radio" name="question-{{ i }}" value="A" required> {{ question.option_a }}<br>
-            <input type="radio" name="question-{{ i }}" value="B" required> {{ question.option_b }}<br>
-            <input type="radio" name="question-{{ i }}" value="C" required> {{ question.option_c }}<br>
-            <input type="radio" name="question-{{ i }}" value="D" required> {{ question.option_d }}<br>
+            <ul>
+                <!-- Loop through the choices of each question -->
+                {% for choice in question.choices %}
+                <li>
+                    <input type="radio" name="question-{{ index }}" value="{{ choice }}" required> {{ choice }}
+                </li>
+                {% endfor %}
+            </ul>
         </div>
         {% endfor %}
 
         <button type="submit">Submit Quiz</button>
     </form>
+
 </body>
 </html>
