@@ -9,8 +9,28 @@
 </head>
 <body>
 
+    <!-- Navigation bar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/">Quiz App</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/leaderboard">Leaderboard</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
     <div class="container">
         <h1>Take the Quiz</h1>
+
+        <!-- Timer display -->
+        <div id="timer">
+            Time Remaining: <span id="time">60</span> seconds
+        </div>
 
         <!-- Quiz form starts here -->
         <form method="POST" class="container">
@@ -42,5 +62,22 @@
     <!-- Optional Bootstrap JS and jQuery -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Timer script -->
+    <script>
+        var timeLeft = 60;  // Set the quiz duration in seconds
+        var timer = document.getElementById('time');
+        
+        var countdown = setInterval(function() {
+            timeLeft--;
+            timer.textContent = timeLeft;
+
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                alert("Time's up! Submitting the quiz...");
+                document.forms[0].submit();  // Automatically submit the quiz when time runs out
+            }
+        }, 1000);  // Update every second
+    </script>
 </body>
 </html>

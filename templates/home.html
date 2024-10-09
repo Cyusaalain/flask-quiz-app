@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - Quiz Selection</title>
+    <title>Select a Quiz</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
     <div class="container">
         <h1>Select a Quiz</h1>
-        <ul>
+        <ul class="list-group">
             {% for quiz in quizzes %}
-            <li><a href="{{ url_for('quiz', quiz_id=quiz.id) }}">{{ quiz.title }}</a></li>
+            <li class="list-group-item">
+                <a href="{{ url_for('quiz', quiz_id=quiz.id) }}">{{ quiz.title }}</a>
+            </li>
             {% endfor %}
         </ul>
     </div>

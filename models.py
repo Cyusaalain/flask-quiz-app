@@ -10,6 +10,7 @@ class User(db.Model):
 class Quiz(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
+    questions = db.relationship('Question', backref='quiz', lazy=True)
 
     # Relationship to the Question model (one quiz has many questions)
     questions = db.relationship('Question', backref='quiz', lazy=True)

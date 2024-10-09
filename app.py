@@ -1,4 +1,6 @@
 from flask import Flask, render_template, request, session
+from flask import render_template, request, redirect, url_for
+from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 
 # Initialize Flask app
@@ -40,11 +42,43 @@ class Question(db.Model):
 def home():
     quizzes = Quiz.query.all()  # Fetch all quizzes from the database
     return render_template('home.html', quizzes=quizzes)
+# Route to render the admin page
+@app.route('/admin', methods=['GET'])
+def admin():
+    quizzes = Quiz.query.all()  # Fetch all quizzes for the dropdown
+    return render_template('admin.html', quizzes=quizzes)
 
+# Route to handle quiz creation
+@app.route('/admin/add-quiz', methods=['POST'])
+def add_quiz():
+    title = request.form['title']
+    new_quiz = Quiz(title=title)
+    db.session.add(new_quiz)
+    db.session.commit()
+    return redirect(url_for('admin'))
+
+# Route to handle adding questions
+@app.route('/admin/add-question', methods=['POST'])
+def add_question():
+    quiz_id = request.form['quiz_id']
+    question_text = request.form['question_text']
+    choices = request.form['choices']
+    correct_answer = request.form['correct_answer']
+
+    # Add the new question to the selected quiz
+    new_question = Question(
+        question_text=question_text,
+        choices=choices,  # Choices are comma-separated
+        correct_answer=correct_answer,
+        quiz_id=quiz_id
+    )
+    db.session.add(new_question)
+    db.session.commit()
+    return redirect(url_for('admin'))
 # Route for the quiz page
 @app.route('/quiz/<int:quiz_id>', methods=['GET', 'POST'])
 def quiz(quiz_id):
-    quiz = Quiz.query.get_or_404(quiz_id)
+    quiz = Quiz.query.get_or_404(quiz_id)  # Fetch quiz by ID
     questions = quiz.questions
 
     if request.method == 'POST':
@@ -67,9 +101,24 @@ def quiz(quiz_id):
         return render_template('result.html', score=score, user_answers=user_answers)
 
     return render_template('quiz.html', questions=questions, enumerate=enumerate)
-
-    # Render quiz form
-    return render_template('quiz.html', questions=questions, enumerate=enumerate)
+@app.route('/leaderboard')
+def leaderboard():
+    users = User.query.order_by(User.score.desc()).limit(10).all()  # Top 10 users
+    return render_template('leaderboard.html', users=users)
+@app.route('/api/quiz/<int:quiz_id>', methods=['GET'])
+def get_quiz_api(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    questions = quiz.questions
+    return jsonify({
+        'quiz': quiz.title,
+        'questions': [
+            {
+                'question_text': q.question_text,
+                'choices': q.get_choices()
+            }
+            for q in questions
+        ]
+    })
 
 # This command ensures the database tables are created
 with app.app_context():
