@@ -38,19 +38,17 @@ class Question(db.Model):
 # Route for the home page (root URL)
 @app.route('/')
 def home():
-    return "<h1>Welcome to the Quiz App!</h1><p>Go to <a href='/quiz'>Quiz Page</a> to start the quiz.</p>"
+    quizzes = Quiz.query.all()  # Fetch all quizzes from the database
+    return render_template('home.html', quizzes=quizzes)
 
 # Route for the quiz page
-@app.route('/quiz', methods=['GET', 'POST'])
-def quiz():
-    quiz = Quiz.query.first()  # Fetch the first quiz
-    if quiz is None:
-        return "<h2>No quizzes available. Please add a quiz to the database.</h2>"
-    
-    questions = quiz.questions  # Get all the questions for this quiz
+@app.route('/quiz/<int:quiz_id>', methods=['GET', 'POST'])
+def quiz(quiz_id):
+    quiz = Quiz.query.get_or_404(quiz_id)
+    questions = quiz.questions
 
     if request.method == 'POST':
-        session['username'] = request.form['username']  # Store username in session
+        session['username'] = request.form['username']
         user_answers = []
         score = 0
 
@@ -66,19 +64,11 @@ def quiz():
             if correct:
                 score += 1
 
-        # Save or update the user's score in the database
-        user = User.query.filter_by(username=session['username']).first()
-        if not user:
-            user = User(username=session['username'], score=score)
-            db.session.add(user)
-        else:
-            if score > user.score:
-                user.score = score
-
-        db.session.commit()
-
         return render_template('result.html', score=score, user_answers=user_answers)
 
+    return render_template('quiz.html', questions=questions, enumerate=enumerate)
+
+    # Render quiz form
     return render_template('quiz.html', questions=questions, enumerate=enumerate)
 
 # This command ensures the database tables are created
