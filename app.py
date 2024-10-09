@@ -42,11 +42,11 @@ def home():
 
 # Route for the quiz page
 @app.route('/quiz', methods=['GET', 'POST'])
-
-# Route for the quiz page
-@app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
-    quiz = Quiz.query.first()  # Fetch the first quiz (you can modify this for multiple quizzes)
+    quiz = Quiz.query.first()  # Fetch the first quiz
+    if quiz is None:
+        return "<h2>No quizzes available. Please add a quiz to the database.</h2>"
+    
     questions = quiz.questions  # Get all the questions for this quiz
 
     if request.method == 'POST':
