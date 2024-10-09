@@ -47,8 +47,6 @@ def quiz():
 
     random.shuffle(questions)
     
-    return render_template('quiz.html', questions=questions)
-
     if request.method == 'POST':
         session['username'] = request.form['username']  # Store username in session
         
@@ -83,5 +81,6 @@ def quiz():
     return render_template('quiz.html', questions=questions)
 
 if __name__ == '__main__':
-    db.create_all()
+    with app.app_context():
+        db.create_all()  # Create the database tables
     app.run(debug=True)
