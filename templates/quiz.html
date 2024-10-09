@@ -18,6 +18,7 @@
         <!-- Loop through questions and render dynamically -->
         {% for i, question in enumerate(questions) %}
         <div>
+            <h3>Question {{ index + 1 }}: {{ question.question_text }}</h3>
             <p>{{ i+1 }}. {{ question.question_text }}</p>
             <input type="radio" name="question-{{ i }}" value="A" required> {{ question.option_a }}<br>
             <input type="radio" name="question-{{ i }}" value="B" required> {{ question.option_b }}<br>

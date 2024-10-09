@@ -46,6 +46,7 @@ def quiz():
         return "No questions found for this quiz."
 
     random.shuffle(questions)
+    return render_template('quiz.html', questions=questions, enumerate=enumerate)
     
     if request.method == 'POST':
         session['username'] = request.form['username']  # Store username in session
