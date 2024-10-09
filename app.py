@@ -1,32 +1,51 @@
-from flask import Flask, render_template, request, session, redirect, url_for
-from models import Quiz, Question, User  # Assuming you have a models file with these classes
-from your_database import db  # Import your db instance (SQLAlchemy)
-import random
+from flask import Flask, render_template, request, session
+from flask_sqlalchemy import SQLAlchemy
 
+# Initialize Flask app
 app = Flask(__name__)
-app.secret_key = 'supersecretkey'  # Needed for session management
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///quiz.db'  # SQLite database path
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.secret_key = 'supersecretkey'  # Set a secret key for session management
 
+# Initialize the SQLAlchemy object
+db = SQLAlchemy(app)
+
+# Define models directly in app.py
+
+# User model
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    score = db.Column(db.Integer, nullable=False)
+
+# Quiz model
+class Quiz(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    questions = db.relationship('Question', backref='quiz', lazy=True)
+
+# Question model
+class Question(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    question_text = db.Column(db.String(255), nullable=False)
+    correct_answer = db.Column(db.String(100), nullable=False)
+    choices = db.Column(db.String(255), nullable=False)
+    quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), nullable=False)
+
+    def get_choices(self):
+        return self.choices.split(',')
+
+# Route for the quiz page
 @app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
-    # Fetch the first quiz (modify if you have multiple quizzes)
-    quiz = Quiz.query.first()
-    
-    if not quiz:
-        return "No quiz available."
-
-    # Fetch all the questions related to this quiz
-    questions = quiz.questions
-    random.shuffle(questions)  # Shuffle questions randomly for quiz
+    quiz = Quiz.query.first()  # Fetch the first quiz (you can modify this for multiple quizzes)
+    questions = quiz.questions  # Get all the questions for this quiz
 
     if request.method == 'POST':
-        # Save username in session
-        session['username'] = request.form['username']
-        
-        # Initialize user answers and score
+        session['username'] = request.form['username']  # Store username in session
         user_answers = []
         score = 0
 
-        # Evaluate the answers
         for i, q in enumerate(questions):
             user_answer = request.form.get(f'question-{i}')
             correct = user_answer == q.correct_answer
@@ -39,24 +58,25 @@ def quiz():
             if correct:
                 score += 1
 
-        # Store the user's score in the database
+        # Save or update the user's score in the database
         user = User.query.filter_by(username=session['username']).first()
         if not user:
             user = User(username=session['username'], score=score)
             db.session.add(user)
         else:
-            if score > user.score:  # Update score only if it's better
+            if score > user.score:
                 user.score = score
 
         db.session.commit()
 
-        # Show results page
         return render_template('result.html', score=score, user_answers=user_answers)
 
-    return render_template('quiz.html', questions=questions, enumerate=enumerate)
+    return render_template('quiz.html', questions=questions)
 
+# This command ensures the database tables are created
+with app.app_context():
+    db.create_all()
+
+# Start the Flask app
 if __name__ == '__main__':
-    # Make sure the database is created
-    with app.app_context():
-        db.create_all()  # This ensures tables are created if not already
     app.run(debug=True)
