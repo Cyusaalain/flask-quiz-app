@@ -35,6 +35,14 @@ class Question(db.Model):
     def get_choices(self):
         return self.choices.split(',')
 
+# Route for the home page (root URL)
+@app.route('/')
+def home():
+    return "<h1>Welcome to the Quiz App!</h1><p>Go to <a href='/quiz'>Quiz Page</a> to start the quiz.</p>"
+
+# Route for the quiz page
+@app.route('/quiz', methods=['GET', 'POST'])
+
 # Route for the quiz page
 @app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
