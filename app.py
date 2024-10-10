@@ -56,6 +56,27 @@ def add_quiz():
     db.session.add(new_quiz)
     db.session.commit()
     return redirect(url_for('admin'))
+@app.route('/teacher/add-module', methods=['POST'])
+def add_module():
+    module_title = request.form['module_title']
+    terms_and_conditions = request.form['terms_conditions']
+    # Add students to the module based on selection
+    new_module = Module(title=module_title, terms_conditions=terms_and_conditions)
+    db.session.add(new_module)
+    db.session.commit()
+    return redirect(url_for('teacher_dashboard'))
+@app.route('/student/module/<int:module_id>', methods=['GET', 'POST'])
+def view_module(module_id):
+    module = Module.query.get(module_id)
+    if request.method == 'POST':
+        # Start quiz after accepting terms
+        return redirect(url_for('start_quiz', module_id=module.id))
+    return render_template('terms_conditions.html', module=module)
+@app.route('/student/result/<int:quiz_id>')
+def view_result(quiz_id):
+    quiz = Quiz.query.get(quiz_id)
+    student_score = get_student_score(current_user.id, quiz_id)
+    return render_template('student_result.html', score=student_score)
 
 # Route to handle adding questions
 @app.route('/admin/add-question', methods=['POST'])

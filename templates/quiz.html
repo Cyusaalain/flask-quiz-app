@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -29,7 +29,7 @@
 
         <!-- Timer display -->
         <div id="timer">
-            Time Remaining: <span id="time">60</span> seconds
+            Time Remaining: <span id="time">30</span> seconds
         </div>
 
         <!-- Quiz form starts here -->
@@ -65,7 +65,7 @@
 
     <!-- Timer script -->
     <script>
-        var timeLeft = 60;  // Set the quiz duration in seconds
+        var timeLeft = 30;  // Time for each question
         var timer = document.getElementById('time');
         
         var countdown = setInterval(function() {
@@ -74,8 +74,8 @@
 
             if (timeLeft <= 0) {
                 clearInterval(countdown);
-                alert("Time's up! Submitting the quiz...");
-                document.forms[0].submit();  // Automatically submit the quiz when time runs out
+                alert("Time's up! Moving to the next question...");
+                document.forms[0].submit();  // Automatically move to the next question
             }
         }, 1000);  // Update every second
     </script>
