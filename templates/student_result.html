@@ -3,14 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Quiz Results</title>
+    <title>Your Results</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
     <div class="container">
-        <h1>Your Results</h1>
-        <p>Your score is: {{ score }} out of {{ total }}</p>
-        <a href="/student/dashboard" class="btn btn-primary">Go to Dashboard</a>
+        <h2>Your Quiz Results</h2>
+        <p>Your score: {{ score }} out of {{ total }}</p>
+
+        <!-- Detailed feedback -->
+        <ul class="list-group">
+            {% for answer in user_answers %}
+            <li class="list-group-item">
+                <strong>Question:</strong> {{ answer.question }} <br>
+                <strong>Your Answer:</strong> {{ answer.user_answer }} <br>
+                {% if answer.is_correct %}
+                <span class="text-success">Correct!</span>
+                {% else %}
+                <span class="text-danger">Incorrect. The correct answer is {{ answer.correct_answer }}</span>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+
+        <a href="/student/dashboard" class="btn btn-primary mt-3">Go Back to Dashboard</a>
     </div>
 </body>
 </html>

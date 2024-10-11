@@ -51,6 +51,30 @@
             <button type="submit" class="btn btn-primary">Add Question</button>
         </form>
 
+        <!-- Form to assign students to modules -->
+        <h2>Assign Students to Modules</h2>
+        <form action="/teacher/assign-students" method="POST">
+            <div class="form-group">
+                <label for="module">Select Module:</label>
+                <select class="form-control" id="module" name="module_id" required>
+                    {% for module in modules %}
+                    <option value="{{ module.id }}">{{ module.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="students">Select Students:</label>
+                <select multiple class="form-control" id="students" name="students" required>
+                    {% for student in students %}
+                    <option value="{{ student.id }}">{{ student.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Assign Students</button>
+        </form>
+
         <a href="/" class="btn btn-secondary mt-4">Back to Home</a>
     </div>
 

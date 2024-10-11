@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome, {{ current_user.username }}</h1>
+        <h2>Student Dashboard</h2>
+
+        <h3>Your Modules</h3>
+        <ul class="list-group">
+            {% for module in modules %}
+            <li class="list-group-item">
+                <strong>{{ module.title }}</strong> - 
+                <a href="/student/module/{{ module.id }}" class="btn btn-primary btn-sm">Start Quiz</a>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <a href="/logout" class="btn btn-danger mt-3">Logout</a>
+    </div>
+</body>
+</html>
