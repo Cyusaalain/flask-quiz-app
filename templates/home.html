@@ -1,19 +1,72 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Select a Quiz</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Homepage</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <h1>Select a Quiz</h1>
-        <ul class="list-group">
-            {% for quiz in quizzes %}
-            <li class="list-group-item">
-                <a href="{{ url_for('quiz', quiz_id=quiz.id) }}">{{ quiz.title }}</a>
-            </li>
-            {% endfor %}
-        </ul>
+
+    <!-- Header Section -->
+    <header class="bg-primary text-white text-center py-5">
+        <h1>Welcome to [Cyusa High school]</h1>
+        <p>Explore the latest updates and articles about our school.</p>
+    </header>
+
+    <!-- Main Content Section -->
+    <div class="container my-5">
+        
+        <!-- Articles Section -->
+        <section id="articles" class="mb-5">
+            <h2>Latest Articles</h2>
+            <div class="row">
+                <!-- Example Article 1 -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <img src="article1.jpg" class="card-img-top" alt="Article Image">
+                        <div class="card-body">
+                            <h5 class="card-title">Article Title 1</h5>
+                            <p class="card-text">Short description about the article...</p>
+                            <a href="#" class="btn btn-primary">Read More</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Example Article 2 -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <img src="article2.jpg" class="card-img-top" alt="Article Image">
+                        <div class="card-body">
+                            <h5 class="card-title">Article Title 2</h5>
+                            <p class="card-text">Short description about the article...</p>
+                            <a href="#" class="btn btn-primary">Read More</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Add more articles here -->
+            </div>
+        </section>
+
+        <!-- Login Portal Section -->
+        <section id="login-portals" class="text-center">
+            <h2>Login Portals</h2>
+            <p>Select your portal to login.</p>
+            <div class="row">
+                <div class="col-md-6">
+                    <a href="/teacher/login" class="btn btn-secondary btn-lg">Teacher Login</a>
+                </div>
+                <div class="col-md-6">
+                    <a href="/student/login" class="btn btn-info btn-lg">Student Login</a>
+                </div>
+            </div>
+        </section>
+
     </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-3">
+        <p>&copy; 2024 [Your School Name]. All rights reserved.</p>
+    </footer>
+
 </body>
 </html>

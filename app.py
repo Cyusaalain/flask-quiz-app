@@ -87,16 +87,22 @@ def logout():
     logout_user()
     return redirect(url_for('home'))
 
-# Teacher Dashboard
-@app.route('/teacher/dashboard')
+# Teacher Dashboard Route
+@app.route('/teacher_dashboard')
 @login_required
 def teacher_dashboard():
     if current_user.role != 'teacher':
-        return redirect(url_for('student_dashboard'))
-    
-    modules = Module.query.all()
-    students = User.query.filter_by(role='student').all()
-    return render_template('teacher_dashboard.html', modules=modules, students=students)
+        flash('Access denied!')
+        return redirect(url_for('login'))
+    return render_template('teacher_dashboard.html')
+# Student Dashboard Route
+@app.route('/student_dashboard')
+@login_required
+def student_dashboard():
+    if current_user.role != 'student':
+        flash('Access denied!')
+        return redirect(url_for('login'))
+    return render_template('student_dashboard.html')
 
 # Create a New Module (Teacher Action)
 @app.route('/teacher/add-module', methods=['POST'])
