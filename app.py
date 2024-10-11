@@ -49,6 +49,14 @@ class Question(db.Model):
     choices = db.Column(db.String(255), nullable=False)  # Comma-separated choices
     correct_answer = db.Column(db.String(100), nullable=False)
     quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), nullable=False)
+class QuizResult(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'))
+    score = db.Column(db.Integer, nullable=False)
+
+    student = db.relationship('User', backref='quiz_results')
+    quiz = db.relationship('Quiz', backref='results')
 
 # Routes
 
@@ -122,6 +130,20 @@ def assign_students():
 
     db.session.commit()
     return redirect(url_for('teacher_dashboard'))
+@app.route('/teacher/module/<int:module_id>/leaderboard')
+@login_required
+def leaderboard(module_id):
+    if current_user.role != 'teacher':
+        return redirect(url_for('student_dashboard'))
+
+    # Fetch the module
+    module = Module.query.get(module_id)
+    quizzes = module.quizzes
+
+    # Fetch all results for quizzes in this module
+    results = QuizResult.query.join(Quiz).filter(Quiz.module_id == module_id).order_by(QuizResult.score.desc()).all()
+
+    return render_template('leaderboard.html', results=results, module=module)
 
 # Student Dashboard
 @app.route('/student/dashboard')
@@ -168,14 +190,11 @@ def start_quiz(module_id):
             correct_answer = question.correct_answer
             if user_answer == correct_answer:
                 score += 1
-            user_answers.append({
-                'question': question.question_text,
-                'correct_answer': correct_answer,
-                'user_answer': user_answer,
-                'is_correct': user_answer == correct_answer
-            })
-        # Store the student's score (you can save this in the DB if needed)
-        return render_template('student_result.html', score=score, total=total_questions, user_answers=user_answers)
+            new_result = QuizResult(student_id=current_user.id, quiz_id=quiz.id, score=score)
+        db.session.add(new_result)
+        db.session.commit()
+
+        return render_template('student_result.html', score=score, total=total_questions)
 
     return render_template('quiz.html', quiz=quiz, time_limit=time_limit)
 
