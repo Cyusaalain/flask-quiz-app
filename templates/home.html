@@ -50,13 +50,9 @@
         <!-- Login Portal Section -->
         <section id="login-portals" class="text-center">
             <h2>Login Portals</h2>
-            <p>Select your portal to login.</p>
             <div class="row">
                 <div class="col-md-6">
-                    <a href="/teacher/login" class="btn btn-secondary btn-lg">Teacher Login</a>
-                </div>
-                <div class="col-md-6">
-                    <a href="/student/login" class="btn btn-info btn-lg">Student Login</a>
+                    <a href="{{ url_for('login') }}">Login</a>
                 </div>
             </div>
         </section>
@@ -65,7 +61,7 @@
 
     <!-- Footer -->
     <footer class="bg-dark text-white text-center py-3">
-        <p>&copy; 2024 [Your School Name]. All rights reserved.</p>
+        <p>&copy; 2024 Cyusa High School. All rights reserved.</p>
     </footer>
 
 </body>
