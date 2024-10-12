@@ -65,21 +65,31 @@ class QuizResult(db.Model):
 def home():
     return render_template('home.html')
 
-# Login Route
-@app.route('/login', methods=['GET', 'POST'])
-def login():
+# Student Login Route
+@app.route('/student_login', methods=['GET', 'POST'])
+def student_login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        user = User.query.filter_by(username=username).first()
+        user = User.query.filter_by(username=username, role='student').first()
         if user and check_password_hash(user.password, password):
             login_user(user)
-            if user.role == 'teacher':
-                return redirect(url_for('teacher_dashboard'))
-            else:
-                return redirect(url_for('student_dashboard_view'))
+            return redirect(url_for('student_dashboard_view'))
         flash('Invalid username or password')
-    return render_template('login.html')
+    return render_template('student_login.html')
+
+# Teacher Login Route
+@app.route('/teacher_login', methods=['GET', 'POST'])
+def teacher_login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username, role='teacher').first()
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            return redirect(url_for('teacher_dashboard'))
+        flash('Invalid username or password')
+    return render_template('teacher_login.html')
 
 # Logout Route
 @app.route('/logout')
