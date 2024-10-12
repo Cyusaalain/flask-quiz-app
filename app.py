@@ -22,9 +22,9 @@ def load_user(user_id):
 # Models
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
+    username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
-    role = db.Column(db.String(10), nullable=False)  # 'teacher' or 'student'
+    role = db.Column(db.String(20), nullable=False)  # 'teacher' or 'student'
 
 class Module(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -49,6 +49,7 @@ class Question(db.Model):
     choices = db.Column(db.String(255), nullable=False)  # Comma-separated choices
     correct_answer = db.Column(db.String(100), nullable=False)
     quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), nullable=False)
+
 class QuizResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -95,14 +96,17 @@ def teacher_dashboard():
         flash('Access denied!')
         return redirect(url_for('login'))
     return render_template('teacher_dashboard.html')
+
 # Student Dashboard Route
 @app.route('/student_dashboard')
 @login_required
-def student_dashboard():
+def student_dashboard_view():
     if current_user.role != 'student':
-        flash('Access denied!')
-        return redirect(url_for('login'))
-    return render_template('student_dashboard.html')
+        return redirect(url_for('teacher_dashboard'))
+    
+    # Fetch the modules assigned to the student
+    assigned_modules = current_user.modules
+    return render_template('student_dashboard.html', modules=assigned_modules)
 
 # Create a New Module (Teacher Action)
 @app.route('/teacher/add-module', methods=['POST'])
@@ -136,6 +140,8 @@ def assign_students():
 
     db.session.commit()
     return redirect(url_for('teacher_dashboard'))
+
+# Leaderboard Route (Teacher)
 @app.route('/teacher/module/<int:module_id>/leaderboard')
 @login_required
 def leaderboard(module_id):
@@ -150,17 +156,6 @@ def leaderboard(module_id):
     results = QuizResult.query.join(Quiz).filter(Quiz.module_id == module_id).order_by(QuizResult.score.desc()).all()
 
     return render_template('leaderboard.html', results=results, module=module)
-
-# Student Dashboard
-@app.route('/student/dashboard')
-@login_required
-def student_dashboard():
-    if current_user.role != 'student':
-        return redirect(url_for('teacher_dashboard'))
-    
-    # Fetch the modules assigned to the student
-    assigned_modules = current_user.modules
-    return render_template('student_dashboard.html', modules=assigned_modules)
 
 # View Module and Start Quiz (Student)
 @app.route('/student/module/<int:module_id>', methods=['GET', 'POST'])
@@ -177,7 +172,6 @@ def view_module(module_id):
     return render_template('terms_conditions.html', module=module)
 
 # Start Quiz (Student)
-# Route to start the quiz
 @app.route('/student/module/<int:module_id>/quiz', methods=['GET', 'POST'])
 @login_required
 def start_quiz(module_id):

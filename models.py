@@ -1,10 +1,20 @@
 from your_database import db  # Import SQLAlchemy instance from your database setup
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # Define a User model to store user data
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    score = db.Column(db.Integer, nullable=False)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)  # Hashed password
+    role = db.Column(db.String(20), nullable=False)  # 'teacher' or 'student'
+
+    # Method to set the password (hash the password)
+    def set_password(self, password):
+        self.password = generate_password_hash(password)
+
+    # Method to check the password (verify it)
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
 
 # Define a Quiz model to store quiz data
 class Quiz(db.Model):
