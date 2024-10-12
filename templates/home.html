@@ -10,7 +10,7 @@
 
     <!-- Header Section -->
     <header class="bg-primary text-white text-center py-5">
-        <h1>Welcome to [Cyusa High school]</h1>
+        <h1>Welcome to [Your School Name]</h1>
         <p>Explore the latest updates and articles about our school.</p>
     </header>
 
@@ -50,10 +50,13 @@
         <!-- Login Portal Section -->
         <section id="login-portals" class="text-center">
             <h2>Login Portals</h2>
+            <p>Select your portal to login.</p>
             <div class="row">
                 <div class="col-md-6">
-                    <a href="{{ url_for('student_login') }}">Student Login</a>
-                    <a href="{{ url_for('teacher_login') }}">Teacher Login</a>
+                    <a href="{{ url_for('teacher_login') }}" class="btn btn-secondary btn-lg">Teacher Login</a>
+                </div>
+                <div class="col-md-6">
+                    <a href="{{ url_for('student_login') }}" class="btn btn-info btn-lg">Student Login</a>
                 </div>
             </div>
         </section>
@@ -62,7 +65,7 @@
 
     <!-- Footer -->
     <footer class="bg-dark text-white text-center py-3">
-        <p>&copy; 2024 Cyusa High School. All rights reserved.</p>
+        <p>© 2024 [Your School Name]. All rights reserved.</p>
     </footer>
 
 </body>
