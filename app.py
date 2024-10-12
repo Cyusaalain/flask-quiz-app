@@ -77,7 +77,7 @@ def login():
             if user.role == 'teacher':
                 return redirect(url_for('teacher_dashboard'))
             else:
-                return redirect(url_for('student_dashboard'))
+                return redirect(url_for('student_dashboard_view'))
         flash('Invalid username or password')
     return render_template('login.html')
 
@@ -113,7 +113,7 @@ def student_dashboard_view():
 @login_required
 def add_module():
     if current_user.role != 'teacher':
-        return redirect(url_for('student_dashboard'))
+        return redirect(url_for('student_dashboard_view'))
     
     module_title = request.form['module_title']
     terms_conditions = request.form['terms_conditions']
@@ -127,7 +127,7 @@ def add_module():
 @login_required
 def assign_students():
     if current_user.role != 'teacher':
-        return redirect(url_for('student_dashboard'))
+        return redirect(url_for('student_dashboard_view'))
     
     module_id = request.form['module_id']
     student_ids = request.form.getlist('students')
@@ -146,7 +146,7 @@ def assign_students():
 @login_required
 def leaderboard(module_id):
     if current_user.role != 'teacher':
-        return redirect(url_for('student_dashboard'))
+        return redirect(url_for('student_dashboard_view'))
 
     # Fetch the module
     module = Module.query.get(module_id)
