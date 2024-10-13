@@ -92,7 +92,12 @@ def student_login():
         user = User.query.filter_by(username=username, role='student').first()
         if user and check_password_hash(user.password, password):
             login_user(user)
-            return redirect(url_for('student_dashboard_view'))
+            try:
+                return redirect(url_for('student_dashboard_view'))
+            except Exception as e:
+                app.logger.error(f"Error redirecting to student dashboard view : {e}")
+                flash('An error occurred while redirecting to the dashboard.')
+                return redirect(url_for('student_login'))    
         flash('Invalid username or password')
     return render_template('student_login.html')
 
