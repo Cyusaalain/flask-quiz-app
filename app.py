@@ -92,6 +92,7 @@ def student_login():
         user = User.query.filter_by(username=username, role='student').first()
         if user and check_password_hash(user.password, password):
             login_user(user)
+            app.logger.info(f"User {username} logged in successfully.")
             try:
                 return redirect(url_for('student_dashboard_view'))
             except Exception as e:
