@@ -21,6 +21,7 @@ login_manager.login_view = 'login'
 student_module = db.Table('student_module',
     db.Column('student_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('module_id', db.Integer, db.ForeignKey('module.id'))
+    extend_existing=True
 )
 
 # User loader for Flask-Login
