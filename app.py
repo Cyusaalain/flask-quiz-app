@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
+from flask_login import UserMixin
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///quizapp.db'
@@ -22,11 +23,26 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 # Models
-class User(db.Model):
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False)  # 'teacher' or 'student'
+
+    def get_id(self):
+        return str(self.id)
+
+    @property
+    def is_authenticated(self):
+        return True
+
+    @property
+    def is_active(self):
+        return True
+
+    @property
+    def is_anonymous(self):
+        return False
 
 class Module(db.Model):
     id = db.Column(db.Integer, primary_key=True)
