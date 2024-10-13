@@ -28,7 +28,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False)  # 'teacher' or 'student'
-    modules = db.relationship('Module', secondary=student_module, backref='student')
+    modules = db.relationship('Module', secondary=student_module, backref='students')
     def get_id(self):
         return str(self.id)
 
