@@ -139,11 +139,18 @@ def teacher_dashboard():
 @login_required
 def student_dashboard_view():
     if current_user.role != 'student':
+        app.logger.error(f"Access denied for user {current_user.username} with role {current_user.role}")
         return redirect(url_for('teacher_dashboard'))
     
-    # Fetch the modules assigned to the student
-    assigned_modules = current_user.modules
-    return render_template('student_dashboard.html', modules=assigned_modules)
+    try:
+        # Fetch the modules assigned to the student
+        assigned_modules = current_user.modules
+        app.logger.info(f"Modules assigned to student {current_user.username}: {assigned_modules}")
+        return render_template('student_dashboard.html', modules=assigned_modules)
+    except Exception as e:
+        app.logger.error(f"Error accessing student dashboard for user {current_user.username}: {e}")
+        flash('An error occurred while accessing the dashboard.')
+        return redirect(url_for('student_login'))
 
 # Create a New Module (Teacher Action)
 @app.route('/teacher/add-module', methods=['POST'])
