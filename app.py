@@ -95,9 +95,9 @@ def student_login():
             try:
                 return redirect(url_for('student_dashboard_view'))
             except Exception as e:
-                app.logger.error(f"Error redirecting to student dashboard view : {e}")
+                app.logger.error(f"Error redirecting to student dashboard: {e}")
                 flash('An error occurred while redirecting to the dashboard.')
-                return redirect(url_for('student_login'))    
+                return redirect(url_for('student_login'))
         flash('Invalid username or password')
     return render_template('student_login.html')
 
