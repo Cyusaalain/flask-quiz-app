@@ -80,7 +80,6 @@ def student_login():
         flash('Invalid username or password')
     return render_template('student_login.html')
 
-# Teacher Login Route
 @app.route('/teacher_login', methods=['GET', 'POST'])
 def teacher_login():
     if request.method == 'POST':
@@ -89,7 +88,12 @@ def teacher_login():
         user = User.query.filter_by(username=username, role='teacher').first()
         if user and check_password_hash(user.password, password):
             login_user(user)
-            return redirect(url_for('teacher_dashboard'))
+            try:
+                return redirect(url_for('teacher_dashboard'))
+            except Exception as e:
+                app.logger.error(f"Error redirecting to teacher dashboard: {e}")
+                flash('An error occurred while redirecting to the dashboard.')
+                return redirect(url_for('teacher_login'))
         flash('Invalid username or password')
     return render_template('teacher_login.html')
 
