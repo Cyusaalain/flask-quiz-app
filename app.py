@@ -135,7 +135,14 @@ def teacher_dashboard():
     if current_user.role != 'teacher':
         flash('Access denied!')
         return redirect(url_for('login'))
-    return render_template('teacher_dashboard.html')
+
+    # Fetch all modules
+    modules = Module.query.all()  # or filter to teacher-specific modules if needed
+
+    # Fetch all students
+    students = User.query.filter_by(role='student').all()
+
+    return render_template('teacher_dashboard.html', modules=modules, students=students)
 
 # Student Dashboard Route
 @app.route('/student_dashboard')

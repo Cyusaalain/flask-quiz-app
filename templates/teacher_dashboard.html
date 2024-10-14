@@ -26,38 +26,50 @@
         </form>
 
         <!-- List of existing modules -->
-        <h3>Your Modules</h3>
-        <ul class="list-group">
-            {% for module in modules %}
+<h3>Your Modules</h3>
+<ul class="list-group">
+    {% if modules %}
+        {% for module in modules %}
             <li class="list-group-item">
                 <strong>{{ module.title }}</strong> - 
                 <a href="/teacher/module/{{ module.id }}/leaderboard" class="btn btn-info btn-sm">View Leaderboard</a>
                 <a href="/teacher/module/{{ module.id }}" class="btn btn-primary btn-sm">Manage Module</a>
             </li>
-            {% endfor %}
-        </ul>
+        {% endfor %}
+    {% else %}
+        <li class="list-group-item">No modules available.</li>
+    {% endif %}
+</ul>
 
-        <!-- Form to assign students to modules -->
-        <h3>Assign Students to a Module</h3>
-        <form action="/teacher/assign-students" method="POST">
-            <div class="form-group">
-                <label for="module_id">Select Module:</label>
-                <select class="form-control" id="module_id" name="module_id" required>
-                    {% for module in modules %}
+<!-- Form to assign students to modules -->
+<h3>Assign Students to a Module</h3>
+<form action="/teacher/assign-students" method="POST">
+    <div class="form-group">
+        <label for="module_id">Select Module:</label>
+        <select class="form-control" id="module_id" name="module_id" required>
+            {% if modules %}
+                {% for module in modules %}
                     <option value="{{ module.id }}">{{ module.title }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="students">Select Students:</label>
-                <select multiple class="form-control" id="students" name="students" required>
-                    {% for student in students %}
+                {% endfor %}
+            {% else %}
+                <option disabled>No modules available</option>
+            {% endif %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="students">Select Students:</label>
+        <select multiple class="form-control" id="students" name="students" required>
+            {% if students %}
+                {% for student in students %}
                     <option value="{{ student.id }}">{{ student.username }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary">Assign Students</button>
-        </form>
+                {% endfor %}
+            {% else %}
+                <option disabled>No students available</option>
+            {% endif %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Assign Students</button>
+</form>
 
         <a href="/logout" class="btn btn-danger mt-3">Logout</a>
     </div>
