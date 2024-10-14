@@ -57,11 +57,6 @@ class Module(db.Model):
     terms_conditions = db.Column(db.Text, nullable=False)
     quizzes = db.relationship('Quiz', backref='module', lazy=True)
 
-student_module = db.Table('student_module',
-    db.Column('student_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('module_id', db.Integer, db.ForeignKey('module.id'))
-)
-
 class Quiz(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
