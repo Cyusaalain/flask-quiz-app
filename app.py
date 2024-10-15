@@ -146,13 +146,15 @@ def add_module():
     return redirect(url_for('teacher_dashboard'))
 
 # Manage Module (Teacher)
-@app.route('/teacher/module/<int:module_id>')
-@login_required
+@app.route('/teacher/module/<int:module_id>', methods=['GET'])
 def manage_module(module_id):
-    if current_user.role != 'teacher':
-        flash('Access denied!')
-        return redirect(url_for('login'))
+    # Fetch the module from the database
     module = Module.query.get(module_id)
+    
+    if not module:
+        # Handle the case where the module doesn't exist
+        return "Module not found", 404
+
     return render_template('manage_module.html', module=module)
 
 # Assign Students to a Module
