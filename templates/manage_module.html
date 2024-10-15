@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Module</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Manage Module: {{ module.title }}</h1>
+
+        <!-- Assign Quiz to Module -->
+        <h3>Assign Quiz</h3>
+        <form action="/teacher/module/{{ module.id }}/assign-quiz" method="POST">
+            <div class="form-group">
+                <label for="quiz_id">Select Quiz:</label>
+                <select class="form-control" id="quiz_id" name="quiz_id" required>
+                    {% for quiz in quizzes %}
+                    <option value="{{ quiz.id }}">{{ quiz.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Assign Quiz</button>
+        </form>
+
+        <!-- List of Assigned Quizzes -->
+        <h3 class="mt-4">Assigned Quizzes</h3>
+        <ul class="list-group">
+            {% for quiz in module.quizzes %}
+            <li class="list-group-item">
+                <strong>{{ quiz.title }}</strong> 
+                <a href="/teacher/module/{{ module.id }}/quiz/{{ quiz.id }}/edit" class="btn btn-warning btn-sm">Edit Quiz</a>
+                <a href="/teacher/module/{{ module.id }}/quiz/{{ quiz.id }}/delete" class="btn btn-danger btn-sm">Delete Quiz</a>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <!-- View and Assign Students -->
+        <h3 class="mt-4">Assign Students to Module</h3>
+        <form action="/teacher/module/{{ module.id }}/assign-students" method="POST">
+            <div class="form-group">
+                <label for="student_id">Select Students:</label>
+                <select multiple class="form-control" id="student_id" name="student_id[]" required>
+                    {% for student in students %}
+                    <option value="{{ student.id }}">{{ student.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Assign Students</button>
+        </form>
+
+        <!-- List of Students Assigned to Module -->
+        <h3 class="mt-4">Students Assigned to This Module</h3>
+        <ul class="list-group">
+            {% for student in module.students %}
+            <li class="list-group-item">
+                {{ student.username }} 
+                <a href="/teacher/module/{{ module.id }}/student/{{ student.id }}/remove" class="btn btn-danger btn-sm">Remove</a>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <!-- Footer -->
+        <a href="/teacher/dashboard" class="btn btn-secondary mt-4">Back to Dashboard</a>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-4">
+        <p>© 2024 Cyusa Highschool. All rights reserved.</p>
+    </footer>
+</body>
+</html>
