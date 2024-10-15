@@ -36,20 +36,6 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False)  # 'teacher' or 'student'
     modules = db.relationship('Module', secondary=student_module, backref='students')
-    def get_id(self):
-        return str(self.id)
-
-    @property
-    def is_authenticated(self):
-        return True
-
-    @property
-    def is_active(self):
-        return True
-
-    @property
-    def is_anonymous(self):
-        return False
 
 class Module(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -60,6 +46,7 @@ class Module(db.Model):
 class Quiz(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
+    time_limit = db.Column(db.Integer, default=300)  # In seconds (5 minutes by default)
     questions = db.relationship('Question', backref='quiz', lazy=True)
     module_id = db.Column(db.Integer, db.ForeignKey('module.id'), nullable=False)
 
@@ -94,16 +81,11 @@ def student_login():
         user = User.query.filter_by(username=username, role='student').first()
         if user and check_password_hash(user.password, password):
             login_user(user)
-            app.logger.info(f"User {username} logged in successfully.")
-            try:
-                return redirect(url_for('student_dashboard_view'))
-            except Exception as e:
-                app.logger.error(f"Error redirecting to student dashboard: {e}")
-                flash('An error occurred while redirecting to the dashboard.')
-                return redirect(url_for('student_login'))
+            return redirect(url_for('student_dashboard_view'))
         flash('Invalid username or password')
     return render_template('student_login.html')
 
+# Teacher Login Route
 @app.route('/teacher_login', methods=['GET', 'POST'])
 def teacher_login():
     if request.method == 'POST':
@@ -112,12 +94,7 @@ def teacher_login():
         user = User.query.filter_by(username=username, role='teacher').first()
         if user and check_password_hash(user.password, password):
             login_user(user)
-            try:
-                return redirect(url_for('teacher_dashboard'))
-            except Exception as e:
-                app.logger.error(f"Error redirecting to teacher dashboard: {e}")
-                flash('An error occurred while redirecting to the dashboard.')
-                return redirect(url_for('teacher_login'))
+            return redirect(url_for('teacher_dashboard'))
         flash('Invalid username or password')
     return render_template('teacher_login.html')
 
@@ -137,8 +114,7 @@ def teacher_dashboard():
         return redirect(url_for('login'))
 
     # Fetch all modules
-    modules = Module.query.all()  # or filter to teacher-specific modules if needed
-
+    modules = Module.query.all()
     # Fetch all students
     students = User.query.filter_by(role='student').all()
 
@@ -149,18 +125,11 @@ def teacher_dashboard():
 @login_required
 def student_dashboard_view():
     if current_user.role != 'student':
-        app.logger.error(f"Access denied for user {current_user.username} with role {current_user.role}")
         return redirect(url_for('teacher_dashboard'))
-    
-    try:
-        # Fetch the modules assigned to the student
-        assigned_modules = current_user.modules
-        app.logger.info(f"Modules assigned to student {current_user.username}: {assigned_modules}")
-        return render_template('student_dashboard.html', modules=assigned_modules)
-    except Exception as e:
-        app.logger.error(f"Error accessing student dashboard for user {current_user.username}: {e}")
-        flash('An error occurred while accessing the dashboard.')
-        return redirect(url_for('student_login'))
+
+    # Fetch the modules assigned to the student
+    assigned_modules = current_user.modules
+    return render_template('student_dashboard.html', modules=assigned_modules)
 
 # Create a New Module (Teacher Action)
 @app.route('/teacher/add-module', methods=['POST'])
@@ -168,7 +137,7 @@ def student_dashboard_view():
 def add_module():
     if current_user.role != 'teacher':
         return redirect(url_for('student_dashboard_view'))
-    
+
     module_title = request.form['module_title']
     terms_conditions = request.form['terms_conditions']
     new_module = Module(title=module_title, terms_conditions=terms_conditions)
@@ -176,7 +145,7 @@ def add_module():
     db.session.commit()
     return redirect(url_for('teacher_dashboard'))
 
-#manager module
+# Manage Module (Teacher)
 @app.route('/teacher/module/<int:module_id>')
 @login_required
 def manage_module(module_id):
@@ -186,12 +155,13 @@ def manage_module(module_id):
     module = Module.query.get(module_id)
     return render_template('manage_module.html', module=module)
 
-#assign student
+# Assign Students to a Module
 @app.route('/teacher/module/<int:module_id>/assign-students', methods=['POST'])
 @login_required
 def assign_students(module_id):
     if current_user.role != 'teacher':
         return redirect(url_for('login'))
+
     student_ids = request.form.getlist('student_id')
     module = Module.query.get(module_id)
     for student_id in student_ids:
@@ -202,7 +172,7 @@ def assign_students(module_id):
     flash(f"Students assigned to module '{module.title}'", 'success')
     return redirect(url_for('manage_module', module_id=module_id))
 
-#remove student
+# Remove Student from Module
 @app.route('/teacher/module/<int:module_id>/student/<int:student_id>/remove', methods=['POST'])
 @login_required
 def remove_student(module_id, student_id):
@@ -211,7 +181,6 @@ def remove_student(module_id, student_id):
 
     module = Module.query.get(module_id)
     student = User.query.get(student_id)
-
     if student in module.students:
         module.students.remove(student)
         db.session.commit()
@@ -219,29 +188,13 @@ def remove_student(module_id, student_id):
     flash(f'Student {student.username} removed from module {module.title}', 'info')
     return redirect(url_for('manage_module', module_id=module_id))
 
-#setting timer
-@app.route('/teacher/module/<int:module_id>/student/<int:student_id>/remove', methods=['POST'])
-@login_required
-def remove_student(module_id, student_id):
-    if current_user.role != 'teacher':
-        return redirect(url_for('login'))
-
-    module = Module.query.get(module_id)
-    student = User.query.get(student_id)
-
-    if student in module.students:
-        module.students.remove(student)
-        db.session.commit()
-
-    flash(f'Student {student.username} removed from module {module.title}', 'info')
-    return redirect(url_for('manage_module', module_id=module_id))
-
-#assign quiz
+# Assign Quiz to a Module
 @app.route('/teacher/module/<int:module_id>/assign-quiz', methods=['POST'])
 @login_required
 def assign_quiz(module_id):
     if current_user.role != 'teacher':
         return redirect(url_for('login'))
+
     quiz_id = request.form.get('quiz_id')
     module = Module.query.get(module_id)
     quiz = Quiz.query.get(quiz_id)
@@ -250,37 +203,35 @@ def assign_quiz(module_id):
     flash(f"Quiz '{quiz.title}' assigned to module '{module.title}'", 'success')
     return redirect(url_for('manage_module', module_id=module_id))
 
-#adding question
+# Add Question to a Quiz
 @app.route('/teacher/module/<int:module_id>/add-question', methods=['POST'])
 @login_required
 def add_question(module_id):
     if current_user.role != 'teacher':
         return redirect(url_for('login'))
 
+    quiz_id = request.form['quiz_id']
     question_text = request.form['question_text']
-    choices = request.form.getlist('choices')
+    choices = ','.join(request.form.getlist('choices'))  # Comma-separated string of choices
     correct_answer = request.form['correct_answer']
 
-    module = Module.query.get(module_id)
-    new_question = Question(text=question_text, choices=choices, correct_answer=correct_answer)
-    module.questions.append(new_question)
+    quiz = Quiz.query.get(quiz_id)
+    new_question = Question(question_text=question_text, choices=choices, correct_answer=correct_answer, quiz=quiz)
+    db.session.add(new_question)
     db.session.commit()
 
-    flash(f'Question added to module {module.title}', 'success')
+    flash(f'Question added to quiz {quiz.title}', 'success')
     return redirect(url_for('manage_module', module_id=module_id))
 
-# Leaderboard Route (Teacher)
+# Leaderboard (Teacher)
 @app.route('/teacher/module/<int:module_id>/leaderboard')
 @login_required
 def leaderboard(module_id):
     if current_user.role != 'teacher':
         return redirect(url_for('student_dashboard_view'))
 
-    # Fetch the module
     module = Module.query.get(module_id)
     quizzes = module.quizzes
-
-    # Fetch all results for quizzes in this module
     results = QuizResult.query.join(Quiz).filter(Quiz.module_id == module_id).order_by(QuizResult.score.desc()).all()
 
     return render_template('leaderboard.html', results=results, module=module)
@@ -291,53 +242,41 @@ def leaderboard(module_id):
 def view_module(module_id):
     if current_user.role != 'student':
         return redirect(url_for('teacher_dashboard'))
-    
+
     module = Module.query.get(module_id)
+
     if request.method == 'POST':
-        # Start quiz after accepting terms
-        return redirect(url_for('start_quiz', module_id=module.id))
-    
-    return render_template('terms_conditions.html', module=module)
+        quiz_id = request.form['quiz_id']
+        quiz = Quiz.query.get(quiz_id)
+        return redirect(url_for('start_quiz', quiz_id=quiz_id))
+
+    return render_template('student_module_view.html', module=module)
 
 # Start Quiz (Student)
-@app.route('/student/module/<int:module_id>/quiz', methods=['GET', 'POST'])
+@app.route('/student/quiz/<int:quiz_id>', methods=['GET', 'POST'])
 @login_required
-def start_quiz(module_id):
-    module = Module.query.get(module_id)
-    quiz = module.quizzes[0]  # Fetch the first quiz for simplicity
-    time_limit = 300  # Example: 5 minutes (300 seconds)
+def start_quiz(quiz_id):
+    if current_user.role != 'student':
+        return redirect(url_for('teacher_dashboard'))
+
+    quiz = Quiz.query.get(quiz_id)
 
     if request.method == 'POST':
-        # Evaluate the quiz submission
         score = 0
-        total_questions = len(quiz.questions)
-        user_answers = []
-        
         for index, question in enumerate(quiz.questions):
             user_answer = request.form.get(f'question-{index}')
-            correct_answer = question.correct_answer
-            if user_answer == correct_answer:
+            if user_answer == question.correct_answer:
                 score += 1
-            new_result = QuizResult(student_id=current_user.id, quiz_id=quiz.id, score=score)
+
+        new_result = QuizResult(student_id=current_user.id, quiz_id=quiz.id, score=score)
         db.session.add(new_result)
         db.session.commit()
 
-        return render_template('student_result.html', score=score, total=total_questions)
+        return render_template('student_result.html', score=score, total=len(quiz.questions))
 
-    return render_template('quiz.html', quiz=quiz, time_limit=time_limit)
+    time_limit = quiz.time_limit
+    return render_template('start_quiz.html', quiz=quiz, time_limit=time_limit)
 
-# View Result after Quiz (Student)
-@app.route('/student/result/<int:module_id>')
-@login_required
-def view_result(module_id):
-    module = Module.query.get(module_id)
-    student_score = 90  # Placeholder: Calculate score logic
-    return render_template('student_result.html', score=student_score)
-
-# Create DB Tables if not exists
-with app.app_context():
-    db.create_all()
-
-# Run the App
+# Run the app
 if __name__ == '__main__':
     app.run(debug=True)
