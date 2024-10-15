@@ -177,6 +177,7 @@ def assign_students(module_id):
 @login_required
 def remove_student(module_id, student_id):
     if current_user.role != 'teacher':
+        flash('Access denied!', 'error')
         return redirect(url_for('login'))
 
     module = Module.query.get(module_id)
@@ -212,16 +213,47 @@ def add_question(module_id):
 
     quiz_id = request.form['quiz_id']
     question_text = request.form['question_text']
-    choices = ','.join(request.form.getlist('choices'))  # Comma-separated string of choices
+    choices = request.form['choices']  # Ensure choices are comma-separated in the form
     correct_answer = request.form['correct_answer']
 
     quiz = Quiz.query.get(quiz_id)
-    new_question = Question(question_text=question_text, choices=choices, correct_answer=correct_answer, quiz=quiz)
+    if not quiz:
+        flash('Quiz not found.', 'error')
+        return redirect(url_for('manage_module', module_id=module_id))
+
+    new_question = Question(
+        question_text=question_text,
+        choices=choices,  # Assumes choices are already comma-separated in the form
+        correct_answer=correct_answer,
+        quiz=quiz
+    )
     db.session.add(new_question)
     db.session.commit()
 
-    flash(f'Question added to quiz {quiz.title}', 'success')
+    flash('Question added successfully.', 'success')
     return redirect(url_for('manage_module', module_id=module_id))
+
+#timer handle
+@app.route('/teacher/quiz/<int:quiz_id>/set-timer', methods=['POST'])
+@login_required
+def set_timer(quiz_id):
+    if current_user.role != 'teacher':
+        return redirect(url_for('login'))
+
+    quiz = Quiz.query.get(quiz_id)
+    if not quiz:
+        flash('Quiz not found.', 'error')
+        return redirect(url_for('teacher_dashboard'))
+
+    time_limit = request.form['time_limit']
+    try:
+        quiz.time_limit = int(time_limit)  # Make sure it's an integer
+        db.session.commit()
+        flash(f'Timer set to {time_limit} seconds.', 'success')
+    except ValueError:
+        flash('Invalid timer value.', 'error')
+
+    return redirect(url_for('manage_module', module_id=quiz.module_id))
 
 # Leaderboard (Teacher)
 @app.route('/teacher/module/<int:module_id>/leaderboard')

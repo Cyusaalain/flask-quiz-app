@@ -12,7 +12,7 @@
 
         <!-- Add a New Question to the Module -->
         <h3>Create a New Question</h3>
-        <form action="/teacher/module/{{ module.id }}/add-question" method="POST">
+        <form action="{{ url_for('add_question', module_id=module.id) }}" method="POST">
             <div class="form-group">
                 <label for="question_text">Question:</label>
                 <textarea class="form-control" id="question_text" name="question_text" rows="3" required></textarea>
@@ -57,19 +57,21 @@
             <li class="list-group-item">
                 <strong>{{ question.text }}</strong>
                 <ul>
-                    {% for choice in question.choices %}
+                    {% for choice in question.choices.split(',') %}
                     <li>{{ choice }}</li>
                     {% endfor %}
                 </ul>
-                <a href="/teacher/module/{{ module.id }}/question/{{ question.id }}/edit" class="btn btn-warning btn-sm">Edit</a>
-                <a href="/teacher/module/{{ module.id }}/question/{{ question.id }}/delete" class="btn btn-danger btn-sm">Delete</a>
+                <a href="{{ url_for('edit_question', module_id=module.id, question_id=question.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                <form action="{{ url_for('delete_question', module_id=module.id, question_id=question.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
             </li>
             {% endfor %}
         </ul>
 
         <!-- Set Timer for the Quiz -->
         <h3 class="mt-4">Set Timer for the Quiz</h3>
-        <form action="/teacher/module/{{ module.id }}/set-timer" method="POST">
+        <form action="{{ url_for('set_timer', module_id=module.id) }}" method="POST">
             <div class="form-group">
                 <label for="time_limit">Time Limit (in minutes):</label>
                 <input type="number" class="form-control" id="time_limit" name="time_limit" required>
@@ -83,12 +85,14 @@
             {% for student in module.students %}
             <li class="list-group-item">
                 {{ student.username }}
-                <a href="/teacher/module/{{ module.id }}/student/{{ student.id }}/remove" class="btn btn-danger btn-sm">Remove</a>
+                <form action="{{ url_for('remove_student', module_id=module.id, student_id=student.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                </form>
             </li>
             {% endfor %}
         </ul>
 
-        <a href="/teacher/dashboard" class="btn btn-secondary mt-4">Back to Dashboard</a>
+        <a href="{{ url_for('teacher_dashboard') }}" class="btn btn-secondary mt-4">Back to Dashboard</a>
     </div>
 
     <footer class="bg-dark text-white text-center py-3 mt-4">
