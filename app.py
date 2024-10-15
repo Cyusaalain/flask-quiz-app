@@ -185,25 +185,6 @@ def manage_module(module_id):
     module = Module.query.get(module_id)
     return render_template('manage_module.html', module=module)
 
-# Assign Students to Module (Teacher Action)
-@app.route('/teacher/assign-students', methods=['POST'])
-@login_required
-def assign_students():
-    if current_user.role != 'teacher':
-        return redirect(url_for('student_dashboard_view'))
-    
-    module_id = request.form['module_id']
-    student_ids = request.form.getlist('students')
-
-    module = Module.query.get(module_id)
-    students = User.query.filter(User.id.in_(student_ids)).all()
-
-    for student in students:
-        module.students.append(student)
-
-    db.session.commit()
-    return redirect(url_for('teacher_dashboard'))
-
 @app.route('/teacher/module/<int:module_id>/assign-students', methods=['POST'])
 @login_required
 def assign_students(module_id):
