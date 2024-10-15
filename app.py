@@ -176,6 +176,7 @@ def add_module():
     db.session.commit()
     return redirect(url_for('teacher_dashboard'))
 
+#manager module
 @app.route('/teacher/module/<int:module_id>')
 @login_required
 def manage_module(module_id):
@@ -185,6 +186,7 @@ def manage_module(module_id):
     module = Module.query.get(module_id)
     return render_template('manage_module.html', module=module)
 
+#assign student
 @app.route('/teacher/module/<int:module_id>/assign-students', methods=['POST'])
 @login_required
 def assign_students(module_id):
@@ -200,19 +202,41 @@ def assign_students(module_id):
     flash(f"Students assigned to module '{module.title}'", 'success')
     return redirect(url_for('manage_module', module_id=module_id))
 
+#remove student
 @app.route('/teacher/module/<int:module_id>/student/<int:student_id>/remove', methods=['POST'])
 @login_required
 def remove_student(module_id, student_id):
     if current_user.role != 'teacher':
         return redirect(url_for('login'))
+
     module = Module.query.get(module_id)
     student = User.query.get(student_id)
+
     if student in module.students:
         module.students.remove(student)
         db.session.commit()
-    flash(f"Student '{student.username}' removed from module '{module.title}'", 'info')
+
+    flash(f'Student {student.username} removed from module {module.title}', 'info')
     return redirect(url_for('manage_module', module_id=module_id))
 
+#setting timer
+@app.route('/teacher/module/<int:module_id>/student/<int:student_id>/remove', methods=['POST'])
+@login_required
+def remove_student(module_id, student_id):
+    if current_user.role != 'teacher':
+        return redirect(url_for('login'))
+
+    module = Module.query.get(module_id)
+    student = User.query.get(student_id)
+
+    if student in module.students:
+        module.students.remove(student)
+        db.session.commit()
+
+    flash(f'Student {student.username} removed from module {module.title}', 'info')
+    return redirect(url_for('manage_module', module_id=module_id))
+
+#assign quiz
 @app.route('/teacher/module/<int:module_id>/assign-quiz', methods=['POST'])
 @login_required
 def assign_quiz(module_id):
@@ -224,6 +248,25 @@ def assign_quiz(module_id):
     module.quizzes.append(quiz)
     db.session.commit()
     flash(f"Quiz '{quiz.title}' assigned to module '{module.title}'", 'success')
+    return redirect(url_for('manage_module', module_id=module_id))
+
+#adding question
+@app.route('/teacher/module/<int:module_id>/add-question', methods=['POST'])
+@login_required
+def add_question(module_id):
+    if current_user.role != 'teacher':
+        return redirect(url_for('login'))
+
+    question_text = request.form['question_text']
+    choices = request.form.getlist('choices')
+    correct_answer = request.form['correct_answer']
+
+    module = Module.query.get(module_id)
+    new_question = Question(text=question_text, choices=choices, correct_answer=correct_answer)
+    module.questions.append(new_question)
+    db.session.commit()
+
+    flash(f'Question added to module {module.title}', 'success')
     return redirect(url_for('manage_module', module_id=module_id))
 
 # Leaderboard Route (Teacher)
