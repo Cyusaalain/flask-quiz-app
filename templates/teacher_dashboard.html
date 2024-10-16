@@ -43,7 +43,7 @@
 
 <!-- Form to assign students to modules -->
 <h3>Assign Students to a Module</h3>
-<form action="{{ url_for('assign_students', module_id=module.id) }}" method="POST">
+<form action="/teacher/assign-students" method="POST">
     <div class="form-group">
         <label for="module_id">Select Module:</label>
         <select class="form-control" id="module_id" name="module_id" required>
