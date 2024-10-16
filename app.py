@@ -164,14 +164,28 @@ def assign_students(module_id):
     if current_user.role != 'teacher':
         return redirect(url_for('login'))
 
-    student_ids = request.form.getlist('student_id')
+    # Get the module by ID
     module = Module.query.get(module_id)
-    for student_id in student_ids:
-        student = User.query.get(student_id)
+    if not module:
+        flash('Module not found.', 'error')
+        return redirect(url_for('teacher_dashboard'))
+
+    # Get the list of student IDs from the form
+    student_ids = request.form.getlist('students')
+    if not student_ids:
+        flash('No students selected.', 'error')
+        return redirect(url_for('manage_module', module_id=module_id))
+    if not student_ids:
+    flash('No students selected.', 'error')
+    return redirect(url_for('manage_module', module_id=module_id))
+
+    # Fetch the students by their IDs and add them to the module
+    students = User.query.filter(User.id.in_(student_ids)).all()
+    for student in students:
         if student not in module.students:
             module.students.append(student)
     db.session.commit()
-    flash(f"Students assigned to module '{module.title}'", 'success')
+    flash('Students successfully assigned!', 'success')
     return redirect(url_for('manage_module', module_id=module_id))
 
 # Remove Student from Module
@@ -213,26 +227,29 @@ def add_question(module_id):
     if current_user.role != 'teacher':
         return redirect(url_for('login'))
 
-    quiz_id = request.form['quiz_id']
-    question_text = request.form['question_text']
-    choices = request.form['choices']  # Ensure choices are comma-separated in the form
-    correct_answer = request.form['correct_answer']
+    module = Module.query.get(module_id)
+    if not module:
+        flash('Module not found.', 'error')
+        return redirect(url_for('teacher_dashboard'))
 
-    quiz = Quiz.query.get(quiz_id)
-    if not quiz:
-        flash('Quiz not found.', 'error')
+    question_text = request.form.get('question_text')
+    choices = request.form.get('choices')  # Comma-separated
+    correct_answer = request.form.get('correct_answer')
+
+    if not question_text or not choices or not correct_answer:
+        flash('All fields are required.', 'error')
         return redirect(url_for('manage_module', module_id=module_id))
 
     new_question = Question(
         question_text=question_text,
-        choices=choices,  # Assumes choices are already comma-separated in the form
+        choices=choices,  # Assuming choices is a comma-separated string
         correct_answer=correct_answer,
-        quiz=quiz
+        quiz_id=module.quizzes[0].id  # Assuming there's a quiz in the module
     )
     db.session.add(new_question)
     db.session.commit()
 
-    flash('Question added successfully.', 'success')
+    flash('Question added successfully!', 'success')
     return redirect(url_for('manage_module', module_id=module_id))
 
 #timer handle
