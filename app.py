@@ -224,25 +224,32 @@ def add_question(module_id):
     if current_user.role != 'teacher':
         return redirect(url_for('login'))
 
-    module = Module.query.get(module_id)
-    if not module:
-        flash('Module not found.', 'error')
-        return redirect(url_for('teacher_dashboard'))
+    question_text = request.form['question_text']
+    choices = request.form.getlist('choices')  # Fetching choices from form
+    correct_answer = request.form['correct_answer']
 
-    question_text = request.form.get('question_text')
-    choices = request.form.get('choices')  # Comma-separated
-    correct_answer = request.form.get('correct_answer')
-
+    # Ensure all fields are filled
     if not question_text or not choices or not correct_answer:
-        flash('All fields are required.', 'error')
+        flash('Please fill in all fields.', 'error')
+        return redirect(url_for('manage_module', module_id=module_id))
+
+    # Join choices to save them as a single string (assuming comma-separated choices)
+    choices_str = ','.join(choices)
+
+    # Create new question and associate it with the module's quiz
+    quiz = Quiz.query.filter_by(module_id=module_id).first()  # Get the quiz for the module
+    if not quiz:
+        flash('Quiz not found for this module.', 'error')
         return redirect(url_for('manage_module', module_id=module_id))
 
     new_question = Question(
         question_text=question_text,
-        choices=choices,  # Assuming choices is a comma-separated string
+        choices=choices_str,
         correct_answer=correct_answer,
-        quiz_id=module.quizzes[0].id  # Assuming there's a quiz in the module
+        quiz_id=quiz.id
     )
+
+    # Save the question to the database
     db.session.add(new_question)
     db.session.commit()
 

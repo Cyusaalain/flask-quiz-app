@@ -12,24 +12,31 @@
 
         <!-- Add a New Question to the Module -->
         <h3>Create a New Question</h3>
-        <form method="POST" action="{{ url_for('add_question', module_id=module.id) }}">
+        <form action="/teacher/module/{{ module.id }}/add-question" method="POST">
             <div class="form-group">
-                <label for="question_text">Question Text:</label>
-                <textarea class="form-control" id="question_text" name="question_text" required></textarea>
+                <label for="question_text">Question:</label>
+                <textarea class="form-control" id="question_text" name="question_text" rows="3" required></textarea>
             </div>
-            
-            <div class="form-group">
-                <label for="choices">Choices (comma-separated):</label>
-                <input type="text" class="form-control" name="choices" required>
+        
+            <h4>Choices:</h4>
+            <div id="choices_container">
+                <div class="form-group">
+                    <label for="choice1">Choice 1:</label>
+                    <input type="text" class="form-control" id="choice1" name="choices[]" required>
+                </div>
+                <div class="form-group">
+                    <label for="choice2">Choice 2:</label>
+                    <input type="text" class="form-control" id="choice2" name="choices[]" required>
+                </div>
             </div>
-            
+        
             <div class="form-group">
                 <label for="correct_answer">Correct Answer:</label>
-                <input type="text" class="form-control" name="correct_answer" required>
+                <input type="text" class="form-control" id="correct_answer" name="correct_answer" required>
             </div>
         
             <button type="submit" class="btn btn-primary">Add Question</button>
-        </form>        
+        </form>               
 
         <!-- List of Questions -->
         <h3 class="mt-4">Questions in this Module</h3>
