@@ -236,26 +236,34 @@ def add_question(module_id):
     return redirect(url_for('manage_module', module_id=module_id))
 
 #timer handle
-@app.route('/teacher/quiz/<int:quiz_id>/set-timer', methods=['POST'])
+@app.route('/teacher/module/<int:module_id>/set-timer', methods=['POST'])
 @login_required
-def set_timer(quiz_id):
+def set_timer(module_id):
     if current_user.role != 'teacher':
         return redirect(url_for('login'))
 
-    quiz = Quiz.query.get(quiz_id)
-    if not quiz:
-        flash('Quiz not found.', 'error')
+    # Fetch the module
+    module = Module.query.get(module_id)
+    if not module:
+        flash('Module not found.', 'error')
         return redirect(url_for('teacher_dashboard'))
 
+    # Fetch the quiz for this module (assuming only one quiz per module for simplicity)
+    quiz = Quiz.query.filter_by(module_id=module.id).first()
+    if not quiz:
+        flash('Quiz not found for this module.', 'error')
+        return redirect(url_for('manage_module', module_id=module_id))
+
+    # Get the time limit from the form
     time_limit = request.form['time_limit']
     try:
-        quiz.time_limit = int(time_limit)  # Make sure it's an integer
+        quiz.time_limit = int(time_limit)  # Set the time limit in seconds
         db.session.commit()
-        flash(f'Timer set to {time_limit} seconds.', 'success')
+        flash(f'Timer set to {time_limit} seconds for the quiz.', 'success')
     except ValueError:
         flash('Invalid timer value.', 'error')
 
-    return redirect(url_for('manage_module', module_id=quiz.module_id))
+    return redirect(url_for('manage_module', module_id=module.id))
 
 # Leaderboard (Teacher)
 @app.route('/teacher/module/<int:module_id>/leaderboard')
