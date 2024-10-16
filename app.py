@@ -174,10 +174,7 @@ def assign_students(module_id):
     student_ids = request.form.getlist('students')
     if not student_ids:
         flash('No students selected.', 'error')
-        return redirect(url_for('manage_module', module_id=module_id))
-    if not student_ids:
-    flash('No students selected.', 'error')
-    return redirect(url_for('manage_module', module_id=module_id))
+        return redirect(url_for('manage_module', module_id=module_id)))
 
     # Fetch the students by their IDs and add them to the module
     students = User.query.filter(User.id.in_(student_ids)).all()
