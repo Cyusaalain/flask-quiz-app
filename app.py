@@ -362,33 +362,29 @@ def leaderboard(module_id):
     if not module:
         flash('Module not found.', 'error')
         return redirect(url_for('teacher_dashboard'))
-    
+
     quizzes = module.quizzes
     students = module.students
     results = []
-    
+
     for student in students:
-        # Initialize total_score and quizzes_completed for each student
         total_score = 0
         quizzes_completed = 0
 
-        # Calculate total score and count completed quizzes
         for quiz in quizzes:
             result = QuizResult.query.filter_by(quiz_id=quiz.id, student_id=student.id).first()
             if result:
                 total_score += result.score
                 quizzes_completed += 1
-        
+
         results.append({
             'student': student,
             'total_score': total_score,
             'quizzes_completed': quizzes_completed
         })
-    
-    # Sort students by total score in descending order
+
     results = sorted(results, key=lambda x: x['total_score'], reverse=True)
-    
-    return render_template('leaderboard.html', results=results, module=module)
+    return render_template('leaderboard.html', results=results, module=module, enumerate=enumerate)
 
 # View Module and Start Quiz (Student)
 @app.route('/student/module/<int:module_id>', methods=['GET', 'POST'])

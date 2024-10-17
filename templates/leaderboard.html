@@ -9,7 +9,6 @@
 <body>
     <div class="container">
         <h2>Leaderboard for {{ module.title }}</h2>
-
         <!-- Leaderboard Table -->
         <table class="table table-striped">
             <thead>
@@ -25,7 +24,7 @@
                     <tr>
                         <td>{{ index + 1 }}</td> <!-- Rank (index starts at 0, so add 1) -->
                         <td>{{ result.student.username }}</td> <!-- Student's name -->
-                        <td>{{ result.score }}</td> <!-- Student's score -->
+                        <td>{{ result.total_score }}</td> <!-- Student's score -->
                     </tr>
                     {% endfor %}
                 {% else %}
@@ -35,10 +34,8 @@
                 {% endif %}
             </tbody>
         </table>
-
         <a href="/teacher/dashboard" class="btn btn-primary mt-3">Back to Dashboard</a>
     </div>
-
     <!-- Footer -->
     <footer class="bg-dark text-white text-center py-3">
         <p>© 2024 Cyusa Highschool. All rights reserved.</p>
