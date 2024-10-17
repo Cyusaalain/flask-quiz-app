@@ -187,10 +187,10 @@ def delete_module(module_id):
 def manage_module(module_id):
     if current_user.role != 'teacher':
         return redirect(url_for('login'))
-
+    
     module = Module.query.get(module_id)
     students = User.query.filter_by(role='student').all()
-
+    
     if request.method == 'POST':
         # Logic for updating terms, adding/removing students, and adding questions
         if 'add_question' in request.form:
@@ -205,7 +205,6 @@ def manage_module(module_id):
                 flash('Question added successfully!', 'success')
             else:
                 flash('No quiz found for this module.', 'error')
-
         elif 'set_timer' in request.form:
             time_limit = request.form['time_limit']
             quiz = Quiz.query.filter_by(module_id=module_id).first()
@@ -213,7 +212,6 @@ def manage_module(module_id):
                 quiz.time_limit = int(time_limit)
                 db.session.commit()
                 flash(f'Timer set to {time_limit} seconds for the quiz.', 'success')
-
         elif 'remove_student' in request.form:
             student_id = request.form['student_id']
             student = User.query.get(student_id)
@@ -221,9 +219,8 @@ def manage_module(module_id):
                 module.students.remove(student)
                 db.session.commit()
                 flash(f'Student {student.username} removed from module {module.title}', 'info')
-
         return redirect(url_for('manage_module', module_id=module_id))
-
+    
     return render_template('manage_module.html', module=module, students=students)
 
 # Assign Students to a Module
@@ -289,37 +286,39 @@ def assign_quiz(module_id):
 def add_question(module_id):
     if current_user.role != 'teacher':
         return redirect(url_for('login'))
-
+    
     question_text = request.form['question_text']
     choices = request.form.getlist('choices')  # Fetching choices from form
     correct_answer = request.form['correct_answer']
-
+    
     # Ensure all fields are filled
     if not question_text or not choices or not correct_answer:
         flash('Please fill in all fields.', 'error')
         return redirect(url_for('manage_module', module_id=module_id))
-
+    
     # Join choices to save them as a single string (assuming comma-separated choices)
     choices_str = ','.join(choices)
-
+    
     # Create new question and associate it with the module's quiz
     quiz = Quiz.query.filter_by(module_id=module_id).first()  # Get the quiz for the module
     if not quiz:
         flash('Quiz not found for this module.', 'error')
         return redirect(url_for('manage_module', module_id=module_id))
-
+    
     new_question = Question(
         question_text=question_text,
         choices=choices_str,
         correct_answer=correct_answer,
         quiz_id=quiz.id
     )
-
+    
     # Save the question to the database
     db.session.add(new_question)
     db.session.commit()
-
+    
     flash('Question added successfully!', 'success')
+    
+    # Redirect to add another question
     return redirect(url_for('manage_module', module_id=module_id))
 
 #timer handle
