@@ -9,23 +9,27 @@
 <body>
     <div class="container">
         <h1>Welcome, {{ current_user.username }}</h1>
-        <h2>Student Dashboard</h2>
+        <h2>Your Assigned Modules</h2>
 
-        <h3>Your Modules</h3>
+        <!-- List of Assigned Modules -->
         <ul class="list-group">
-            {% for module in modules %}
-            <li class="list-group-item">
-                <strong>{{ module.title }}</strong> - 
-                <a href="/student/module/{{ module.id }}" class="btn btn-primary btn-sm">Start Quiz</a>
-            </li>
-            {% endfor %}
+            {% if modules %}
+                {% for module in modules %}
+                    <li class="list-group-item">
+                        <strong>{{ module.title }}</strong> 
+                        <a href="{{ url_for('view_module', module_id=module.id) }}" class="btn btn-primary btn-sm">View Module</a>
+                    </li>
+                {% endfor %}
+            {% else %}
+                <li class="list-group-item">No modules assigned.</li>
+            {% endif %}
         </ul>
 
         <a href="/logout" class="btn btn-danger mt-3">Logout</a>
     </div>
- <!-- Footer -->
- <footer class="bg-dark text-white text-center py-3">
-    <p>© 2024 Cyusa Highschool. All rights reserved.</p>
-</footer>
+
+    <footer class="bg-dark text-white text-center py-3">
+        <p>© 2024 Cyusa Highschool. All rights reserved.</p>
+    </footer>
 </body>
 </html>

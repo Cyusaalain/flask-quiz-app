@@ -399,8 +399,7 @@ def view_module(module_id):
     module = Module.query.get(module_id)
 
     if request.method == 'POST':
-        quiz_id = request.form['quiz_id']
-        quiz = Quiz.query.get(quiz_id)
+        quiz_id = module.quizzes[0].id  # Assuming there's one quiz per module
         return redirect(url_for('start_quiz', quiz_id=quiz_id))
 
     return render_template('student_module_view.html', module=module)
