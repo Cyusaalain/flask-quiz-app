@@ -357,20 +357,37 @@ def set_timer(module_id):
 def leaderboard(module_id):
     if current_user.role != 'teacher':
         return redirect(url_for('student_dashboard_view'))
-
+    
     module = Module.query.get(module_id)
+    if not module:
+        flash('Module not found.', 'error')
+        return redirect(url_for('teacher_dashboard'))
+    
     quizzes = module.quizzes
     students = module.students
     results = []
-
+    
     for student in students:
-        result = QuizResult.query.filter_by(quiz_id=quizzes[0].id, student_id=student.id).first()
+        # Initialize total_score and quizzes_completed for each student
+        total_score = 0
+        quizzes_completed = 0
+
+        # Calculate total score and count completed quizzes
+        for quiz in quizzes:
+            result = QuizResult.query.filter_by(quiz_id=quiz.id, student_id=student.id).first()
+            if result:
+                total_score += result.score
+                quizzes_completed += 1
+        
         results.append({
             'student': student,
-            'score': result.score if result else 0
+            'total_score': total_score,
+            'quizzes_completed': quizzes_completed
         })
-
-    results = sorted(results, key=lambda x: x['score'], reverse=True)
+    
+    # Sort students by total score in descending order
+    results = sorted(results, key=lambda x: x['total_score'], reverse=True)
+    
     return render_template('leaderboard.html', results=results, module=module)
 
 # View Module and Start Quiz (Student)
