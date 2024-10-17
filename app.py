@@ -136,6 +136,7 @@ def add_module():
         return redirect(url_for('student_dashboard_view'))
 
     module_title = request.form['module_title']
+    new_module = Module(title=module_title)  
     db.session.add(new_module)
     db.session.commit()
     flash('Module created successfully!', 'success')
