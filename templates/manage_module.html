@@ -24,18 +24,18 @@
         </ul>
 
         <!-- Unassigned Students -->
-        <h3 class="mt-4">Unassigned Students</h3>
-        <ul class="list-group">
-            {% for student in unassigned_students %}
-            <li class="list-group-item">
-                {{ student.username }}
-                <form action="{{ url_for('assign_students', module_id=module.id) }}" method="POST" style="display:inline;">
-                    <input type="hidden" name="student_id" value="{{ student.id }}">
-                    <button type="submit" class="btn btn-primary btn-sm">Assign</button>
-                </form>
-            </li>
-            {% endfor %}
-        </ul>
+<h3 class="mt-4">Unassigned Students</h3>
+<ul class="list-group">
+    {% for student in unassigned_students %}
+    <li class="list-group-item">
+        {{ student.username }}
+        <form action="{{ url_for('assign_students', module_id=module.id) }}" method="POST" style="display:inline;">
+            <input type="hidden" name="student_id" value="{{ student.id }}">
+            <button type="submit" class="btn btn-primary btn-sm">Assign</button>
+        </form>
+    </li>
+    {% endfor %}
+</ul>
 
         <!-- Add New Question -->
         <h3 class="mt-4" id="current-question-title">Create a New Question</h3>

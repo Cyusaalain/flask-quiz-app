@@ -230,23 +230,22 @@ def manage_module(module_id):
 def assign_students(module_id):
     if current_user.role != 'teacher':
         return redirect(url_for('login'))
-
+    
     module = Module.query.get(module_id)
     if not module:
         flash('Module not found.', 'error')
         return redirect(url_for('teacher_dashboard'))
-
-    student_ids = request.form.getlist('students')
-    if not student_ids:
-        flash('No students selected.', 'error')
-        return redirect(url_for('manage_module', module_id=module_id))
-
-    students = User.query.filter(User.id.in_(student_ids)).all()
-    for student in students:
-        if student not in module.students:
-            module.students.append(student)
-    db.session.commit()
-    flash('Students successfully assigned!', 'success')
+    
+    student_id = request.form.get('student_id')
+    student = User.query.get(student_id)
+    
+    if student and student not in module.students:
+        module.students.append(student)
+        db.session.commit()
+        flash('Student assigned successfully!', 'success')
+    else:
+        flash('Student not found or already assigned.', 'error')
+    
     return redirect(url_for('manage_module', module_id=module_id))
 
 # Remove Student from Module
