@@ -187,10 +187,11 @@ def delete_module(module_id):
 def manage_module(module_id):
     if current_user.role != 'teacher':
         return redirect(url_for('login'))
-    
+
     module = Module.query.get(module_id)
-    students = User.query.filter_by(role='student').all()
-    
+    all_students = User.query.filter_by(role='student').all()
+    assigned_students = module.students
+    unassigned_students = [student for student in all_students if student not in assigned_students]
     if request.method == 'POST':
         # Logic for updating terms, adding/removing students, and adding questions
         if 'add_question' in request.form:
@@ -220,9 +221,9 @@ def manage_module(module_id):
                 db.session.commit()
                 flash(f'Student {student.username} removed from module {module.title}', 'info')
         return redirect(url_for('manage_module', module_id=module_id))
+    pass
     
-    return render_template('manage_module.html', module=module, students=students)
-
+    return render_template('manage_module.html', module=module, assigned_students=assigned_students, unassigned_students=unassigned_students)
 # Assign Students to a Module
 @app.route('/teacher/module/<int:module_id>/assign-students', methods=['POST'])
 @login_required

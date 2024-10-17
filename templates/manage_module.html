@@ -5,29 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Module - {{ module.title }}</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        .question-form {
-            display: none;
-        }
-        .question-form.active {
-            display: block;
-        }
-    </style>
 </head>
 <body>
     <div class="container">
         <h1>Manage Module: {{ module.title }}</h1>
 
-        <!-- Add Terms and Conditions for the Quiz -->
-        <h3>Set Terms and Conditions</h3>
-        <form action="{{ url_for('set_terms_conditions', module_id=module.id) }}" method="POST">
-            <div class="form-group">
-                <label for="terms_conditions">Terms and Conditions:</label>
-                <textarea class="form-control" id="terms_conditions" name="terms_conditions" rows="4" required>{{ module.terms_conditions }}</textarea>
-            </div>
-        </form>
+        <!-- Assigned Students -->
+        <h3>Assigned Students</h3>
+        <ul class="list-group">
+            {% for student in assigned_students %}
+            <li class="list-group-item">
+                {{ student.username }}
+                <form action="{{ url_for('remove_student', module_id=module.id, student_id=student.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
 
-        <!-- Add a New Question to the Module -->
+        <!-- Unassigned Students -->
+        <h3 class="mt-4">Unassigned Students</h3>
+        <ul class="list-group">
+            {% for student in unassigned_students %}
+            <li class="list-group-item">
+                {{ student.username }}
+                <form action="{{ url_for('assign_students', module_id=module.id) }}" method="POST" style="display:inline;">
+                    <input type="hidden" name="student_id" value="{{ student.id }}">
+                    <button type="submit" class="btn btn-primary btn-sm">Assign</button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <!-- Add New Question -->
         <h3 class="mt-4" id="current-question-title">Create a New Question</h3>
         <form id="question-form" class="question-form active" action="{{ url_for('add_question', module_id=module.id) }}" method="POST">
             <div class="form-group">
