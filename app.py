@@ -115,10 +115,7 @@ def teacher_dashboard():
 
     # Fetch all modules
     modules = Module.query.all()
-    # Fetch all students
-    students = User.query.filter_by(role='student').all()
-
-    return render_template('teacher_dashboard.html', modules=modules, students=students)
+    return render_template('teacher_dashboard.html', modules=modules)
 
 # Student Dashboard Route
 @app.route('/student_dashboard')
@@ -143,19 +140,70 @@ def add_module():
     new_module = Module(title=module_title, terms_conditions=terms_conditions)
     db.session.add(new_module)
     db.session.commit()
+    flash('Module created successfully!', 'success')
+    return redirect(url_for('teacher_dashboard'))
+
+# Delete Module (Teacher)
+@app.route('/teacher/module/<int:module_id>/delete', methods=['POST'])
+@login_required
+def delete_module(module_id):
+    if current_user.role != 'teacher':
+        return redirect(url_for('login'))
+
+    module = Module.query.get(module_id)
+    if not module:
+        flash('Module not found.', 'error')
+        return redirect(url_for('teacher_dashboard'))
+
+    db.session.delete(module)
+    db.session.commit()
+    flash('Module deleted successfully!', 'success')
     return redirect(url_for('teacher_dashboard'))
 
 # Manage Module (Teacher)
-@app.route('/teacher/module/<int:module_id>', methods=['GET'])
+@app.route('/teacher/module/<int:module_id>', methods=['GET', 'POST'])
+@login_required
 def manage_module(module_id):
-    # Fetch the module from the database
-    module = Module.query.get(module_id)
-    
-    if not module:
-        # Handle the case where the module doesn't exist
-        return "Module not found", 404
+    if current_user.role != 'teacher':
+        return redirect(url_for('login'))
 
-    return render_template('manage_module.html', module=module)
+    module = Module.query.get(module_id)
+    students = User.query.filter_by(role='student').all()
+
+    if request.method == 'POST':
+        # Logic for updating terms, adding/removing students, and adding questions
+        if 'add_question' in request.form:
+            question_text = request.form['question_text']
+            choices = ','.join(request.form.getlist('choices'))  # Comma-separated
+            correct_answer = request.form['correct_answer']
+            quiz = Quiz.query.filter_by(module_id=module_id).first()
+            if quiz:
+                new_question = Question(question_text=question_text, choices=choices, correct_answer=correct_answer, quiz_id=quiz.id)
+                db.session.add(new_question)
+                db.session.commit()
+                flash('Question added successfully!', 'success')
+            else:
+                flash('No quiz found for this module.', 'error')
+
+        elif 'set_timer' in request.form:
+            time_limit = request.form['time_limit']
+            quiz = Quiz.query.filter_by(module_id=module_id).first()
+            if quiz:
+                quiz.time_limit = int(time_limit)
+                db.session.commit()
+                flash(f'Timer set to {time_limit} seconds for the quiz.', 'success')
+
+        elif 'remove_student' in request.form:
+            student_id = request.form['student_id']
+            student = User.query.get(student_id)
+            if student in module.students:
+                module.students.remove(student)
+                db.session.commit()
+                flash(f'Student {student.username} removed from module {module.title}', 'info')
+
+        return redirect(url_for('manage_module', module_id=module_id))
+
+    return render_template('manage_module.html', module=module, students=students)
 
 # Assign Students to a Module
 @app.route('/teacher/module/<int:module_id>/assign-students', methods=['POST'])
@@ -164,19 +212,16 @@ def assign_students(module_id):
     if current_user.role != 'teacher':
         return redirect(url_for('login'))
 
-    # Get the module by ID
     module = Module.query.get(module_id)
     if not module:
         flash('Module not found.', 'error')
         return redirect(url_for('teacher_dashboard'))
 
-    # Get the list of student IDs from the form
     student_ids = request.form.getlist('students')
     if not student_ids:
         flash('No students selected.', 'error')
         return redirect(url_for('manage_module', module_id=module_id))
 
-    # Fetch the students by their IDs and add them to the module
     students = User.query.filter(User.id.in_(student_ids)).all()
     for student in students:
         if student not in module.students:
@@ -295,8 +340,17 @@ def leaderboard(module_id):
 
     module = Module.query.get(module_id)
     quizzes = module.quizzes
-    results = QuizResult.query.join(Quiz).filter(Quiz.module_id == module_id).order_by(QuizResult.score.desc()).all()
+    students = module.students
+    results = []
 
+    for student in students:
+        result = QuizResult.query.filter_by(quiz_id=quizzes[0].id, student_id=student.id).first()
+        results.append({
+            'student': student,
+            'score': result.score if result else 0
+        })
+
+    results = sorted(results, key=lambda x: x['score'], reverse=True)
     return render_template('leaderboard.html', results=results, module=module)
 
 # View Module and Start Quiz (Student)
@@ -337,8 +391,7 @@ def start_quiz(quiz_id):
 
         return render_template('student_result.html', score=score, total=len(quiz.questions))
 
-    time_limit = quiz.time_limit
-    return render_template('start_quiz.html', quiz=quiz, time_limit=time_limit)
+    return render_template('start_quiz.html', quiz=quiz, time_limit=quiz.time_limit)
 
 # Run the app
 if __name__ == '__main__':

@@ -26,59 +26,33 @@
         </form>
 
         <!-- List of existing modules -->
-<h3>Your Modules</h3>
-<ul class="list-group">
-    {% if modules %}
-        {% for module in modules %}
-            <li class="list-group-item">
-                <strong>{{ module.title }}</strong> - 
-                <a href="/teacher/module/{{ module.id }}/leaderboard" class="btn btn-info btn-sm">View Leaderboard</a>
-                <a href="/teacher/module/{{ module.id }}" class="btn btn-primary btn-sm">Manage Module</a>
-            </li>
-        {% endfor %}
-    {% else %}
-        <li class="list-group-item">No modules available.</li>
-    {% endif %}
-</ul>
-
-<!-- Form to assign students to modules -->
-<h3>Assign Students to a Module</h3>
-<form action="/teacher/assign-students" method="POST">
-    <div class="form-group">
-        <label for="module_id">Select Module:</label>
-        <select class="form-control" id="module_id" name="module_id" required>
+        <h3>Your Modules</h3>
+        <ul class="list-group">
             {% if modules %}
                 {% for module in modules %}
-                    <option value="{{ module.id }}">{{ module.title }}</option>
+                    <li class="list-group-item">
+                        <strong>{{ module.title }}</strong> - 
+                        <a href="/teacher/module/{{ module.id }}/leaderboard" class="btn btn-info btn-sm">View Leaderboard</a>
+                        <a href="/teacher/module/{{ module.id }}" class="btn btn-primary btn-sm">Manage Module</a>
+                        <!-- Delete module button -->
+                        <form action="{{ url_for('delete_module', module_id=module.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete Module</button>
+                        </form>
+                    </li>
                 {% endfor %}
             {% else %}
-                <option disabled>No modules available</option>
+                <li class="list-group-item">No modules available.</li>
             {% endif %}
-        </select>
-    </div>
-    <div class="form-group">
-        <label for="students">Select Students:</label>
-        <select multiple class="form-control" id="students" name="students" required>
-            {% if students %}
-                {% for student in students %}
-                    <option value="{{ student.id }}">{{ student.username }}</option>
-                {% endfor %}
-            {% else %}
-                <option disabled>No students available</option>
-            {% endif %}
-        </select>
-    </div>
-    <button type="submit" class="btn btn-primary">Assign Students</button>
-</form>
+        </ul>
 
         <a href="/logout" class="btn btn-danger mt-3">Logout</a>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
- <!-- Footer -->
- <footer class="bg-dark text-white text-center py-3">
-    <p>© 2024 Cyusa Highschool. All rights reserved.</p>
-</footer>
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-3">
+        <p>© 2024 Cyusa Highschool. All rights reserved.</p>
+    </footer>
 </body>
 </html>
