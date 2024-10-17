@@ -136,12 +136,32 @@ def add_module():
         return redirect(url_for('student_dashboard_view'))
 
     module_title = request.form['module_title']
-    terms_conditions = request.form['terms_conditions']
-    new_module = Module(title=module_title, terms_conditions=terms_conditions)
     db.session.add(new_module)
     db.session.commit()
     flash('Module created successfully!', 'success')
     return redirect(url_for('teacher_dashboard'))
+
+# Set Terms and Conditions for a Module
+@app.route('/teacher/module/<int:module_id>/set-terms-conditions', methods=['POST'])
+@login_required
+def set_terms_conditions(module_id):
+    if current_user.role != 'teacher':
+        flash('Access denied!', 'error')
+        return redirect(url_for('teacher_dashboard'))
+    
+    module = Module.query.get_or_404(module_id)
+    
+    # Fetch the updated terms and conditions from the form
+    terms_conditions = request.form['terms_conditions']
+    
+    if terms_conditions:
+        module.terms_conditions = terms_conditions
+        db.session.commit()
+        flash('Terms and conditions updated successfully!', 'success')
+    else:
+        flash('Please enter valid terms and conditions.', 'error')
+    
+    return redirect(url_for('manage_module', module_id=module.id))
 
 # Delete Module (Teacher)
 @app.route('/teacher/module/<int:module_id>/delete', methods=['POST'])
