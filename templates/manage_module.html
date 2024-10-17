@@ -45,7 +45,7 @@
             </li>
             {% endfor %}
         </ul>
-        
+
         <!-- Add a New Question to the Module -->
         <h3 class="mt-4" id="current-question-title">Create a New Question</h3>
         <form id="question-form" class="question-form active" action="{{ url_for('add_question', module_id=module.id) }}" method="POST">
@@ -92,10 +92,10 @@
 
     <script>
         let currentQuestionIndex = 0;
-    
+
         document.getElementById('question-form').addEventListener('submit', (event) => {
             event.preventDefault();  // Prevent default form submission
-    
+
             // Process the form submission with AJAX
             const form = event.target;
             const formData = new FormData(form);
@@ -107,12 +107,12 @@
                     response.json().then(data => {
                         // Reset the form fields after successful submission
                         form.reset();
-    
+
                         // Slide to the next question
                         document.querySelectorAll('.question-form')[currentQuestionIndex].classList.remove('active');
                         currentQuestionIndex++;
                         document.querySelectorAll('.question-form')[currentQuestionIndex].classList.add('active');
-    
+
                         // Update title
                         document.getElementById('current-question-title').innerText = `Create Question ${currentQuestionIndex + 1}`;
                     });
@@ -121,7 +121,7 @@
                 console.error('Error:', error);
             });
         });
-    
+
         document.getElementById('prev-question').addEventListener('click', () => {
             // Slide to the previous question
             if (currentQuestionIndex > 0) {
@@ -131,7 +131,7 @@
                 document.getElementById('current-question-title').innerText = `Create Question ${currentQuestionIndex + 1}`;
             }
         });
-    
+
         document.getElementById('next-question').addEventListener('click', () => {
             // Slide to the next question
             document.querySelectorAll('.question-form')[currentQuestionIndex].classList.remove('active');
@@ -139,6 +139,6 @@
             document.querySelectorAll('.question-form')[currentQuestionIndex].classList.add('active');
             document.getElementById('current-question-title').innerText = `Create Question ${currentQuestionIndex + 1}`;
         });
-    </script>    
+    </script>
 </body>
 </html>
