@@ -134,7 +134,6 @@ def student_dashboard_view():
 def add_module():
     if current_user.role != 'teacher':
         return redirect(url_for('student_dashboard_view'))
-
     module_title = request.form['module_title']
     terms_conditions = request.form['terms_conditions']
     new_module = Module(title=module_title, terms_conditions=terms_conditions)
