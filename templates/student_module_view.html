@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ module.title }}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>{{ module.title }}</h1>
+        <p>{{ module.terms_conditions }}</p>
+
+        <!-- List of Quizzes -->
+        <h3>Quizzes in this Module</h3>
+        <ul class="list-group">
+            {% for quiz in module.quizzes %}
+            <li class="list-group-item">
+                <strong>{{ quiz.title }}</strong> 
+                <form action="/student/module/{{ module.id }}" method="POST" style="display:inline;">
+                    <input type="hidden" name="quiz_id" value="{{ quiz.id }}">
+                    <button type="submit" class="btn btn-primary btn-sm">Start Quiz</button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <a href="/student_dashboard" class="btn btn-secondary mt-4">Back to Dashboard</a>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-4">
+        <p>© 2024 Cyusa Highschool. All rights reserved.</p>
+    </footer>
+</body>
+</html>
