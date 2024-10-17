@@ -288,7 +288,7 @@ def add_question(module_id):
         return redirect(url_for('login'))
     
     question_text = request.form['question_text']
-    choices = request.form.getlist('choices')  # Fetching choices from form
+    choices = request.form.getlist('choices')
     correct_answer = request.form['correct_answer']
     
     # Ensure all fields are filled
@@ -296,11 +296,14 @@ def add_question(module_id):
         flash('Please fill in all fields.', 'error')
         return redirect(url_for('manage_module', module_id=module_id))
     
+    # Debugging: Print form data
+    print(f"Question: {question_text}, Choices: {choices}, Correct Answer: {correct_answer}")
+    
     # Join choices to save them as a single string (assuming comma-separated choices)
     choices_str = ','.join(choices)
     
     # Create new question and associate it with the module's quiz
-    quiz = Quiz.query.filter_by(module_id=module_id).first()  # Get the quiz for the module
+    quiz = Quiz.query.filter_by(module_id=module_id).first()
     if not quiz:
         flash('Quiz not found for this module.', 'error')
         return redirect(url_for('manage_module', module_id=module_id))
@@ -318,7 +321,7 @@ def add_question(module_id):
     
     flash('Question added successfully!', 'success')
     
-    # Redirect to add another question
+    # Redirect to the same page to clear the form
     return redirect(url_for('manage_module', module_id=module_id))
 
 #timer handle
