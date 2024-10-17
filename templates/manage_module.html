@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Module - {{ module.title }}</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .question-form {
+            display: none;
+        }
+        .question-form.active {
+            display: block;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -17,30 +25,15 @@
                 <label for="terms_conditions">Terms and Conditions:</label>
                 <textarea class="form-control" id="terms_conditions" name="terms_conditions" rows="4" required>{{ module.terms_conditions }}</textarea>
             </div>
-            <button type="submit" class="btn btn-primary">Save Terms</button>
         </form>
 
-        <!-- List of Assigned Students -->
-        <h3 class="mt-4">Assigned Students</h3>
-        <ul class="list-group">
-            {% for student in module.students %}
-            <li class="list-group-item">
-                {{ student.username }}
-                <form action="{{ url_for('remove_student', module_id=module.id, student_id=student.id) }}" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                </form>
-            </li>
-            {% endfor %}
-        </ul>
-
         <!-- Add a New Question to the Module -->
-        <h3 class="mt-4">Create a New Question</h3>
-        <form action="{{ url_for('add_question', module_id=module.id) }}" method="POST">
+        <h3 class="mt-4" id="current-question-title">Create a New Question</h3>
+        <form id="question-form" class="question-form active" action="{{ url_for('add_question', module_id=module.id) }}" method="POST">
             <div class="form-group">
                 <label for="question_text">Question:</label>
                 <textarea class="form-control" id="question_text" name="question_text" rows="3" required></textarea>
             </div>
-
             <h4>Choices:</h4>
             <div id="choices_container">
                 <div class="form-group">
@@ -52,32 +45,14 @@
                     <input type="text" class="form-control" id="choice2" name="choices[]" required>
                 </div>
             </div>
-
             <div class="form-group">
                 <label for="correct_answer">Correct Answer:</label>
                 <input type="text" class="form-control" id="correct_answer" name="correct_answer" required>
             </div>
-
             <button type="submit" class="btn btn-primary">Add Question</button>
-        </form>               
-
-        <!-- List of Questions -->
-        <h3 class="mt-4">Questions in this Module</h3>
-        <ul class="list-group">
-            {% for question in module.questions %}
-            <li class="list-group-item">
-                <strong>{{ question.question_text }}</strong>
-                <ul>
-                    {% for choice in question.choices.split(',') %}
-                    <li>{{ choice }}</li>
-                    {% endfor %}
-                </ul>
-                <form action="{{ url_for('delete_question', module_id=module.id, question_id=question.id) }}" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                </form>
-            </li>
-            {% endfor %}
-        </ul>
+            <button type="button" id="prev-question" class="btn btn-secondary">Previous Question</button>
+            <button type="button" id="next-question" class="btn btn-secondary">Next Question</button>
+        </form>
 
         <!-- Set Timer for the Quiz -->
         <h3 class="mt-4">Set Timer for the Quiz</h3>
@@ -86,14 +61,48 @@
                 <label for="time_limit">Time Limit (in minutes):</label>
                 <input type="number" class="form-control" id="time_limit" name="time_limit" required>
             </div>
-            <button type="submit" class="btn btn-primary">Set Timer</button>
-        </form>        
+        </form>
 
+        <button class="btn btn-success mt-4">Submit</button>
         <a href="{{ url_for('teacher_dashboard') }}" class="btn btn-secondary mt-4">Back to Dashboard</a>
     </div>
 
     <footer class="bg-dark text-white text-center py-3 mt-4">
         <p>© 2024 Cyusa Highschool. All rights reserved.</p>
     </footer>
+
+    <script>
+        let currentQuestionIndex = 0;
+
+        document.getElementById('question-form').addEventListener('submit', (event) => {
+            event.preventDefault();  // Prevent default form submission
+
+            // Slide to the next question
+            document.querySelectorAll('.question-form')[currentQuestionIndex].classList.remove('active');
+            currentQuestionIndex++;
+            document.querySelectorAll('.question-form')[currentQuestionIndex].classList.add('active');
+
+            // Update title
+            document.getElementById('current-question-title').innerText = `Create Question ${currentQuestionIndex + 1}`;
+        });
+
+        document.getElementById('prev-question').addEventListener('click', () => {
+            // Slide to the previous question
+            if (currentQuestionIndex > 0) {
+                document.querySelectorAll('.question-form')[currentQuestionIndex].classList.remove('active');
+                currentQuestionIndex--;
+                document.querySelectorAll('.question-form')[currentQuestionIndex].classList.add('active');
+                document.getElementById('current-question-title').innerText = `Create Question ${currentQuestionIndex + 1}`;
+            }
+        });
+
+        document.getElementById('next-question').addEventListener('click', () => {
+            // Slide to the next question
+            document.querySelectorAll('.question-form')[currentQuestionIndex].classList.remove('active');
+            currentQuestionIndex++;
+            document.querySelectorAll('.question-form')[currentQuestionIndex].classList.add('active');
+            document.getElementById('current-question-title').innerText = `Create Question ${currentQuestionIndex + 1}`;
+        });
+    </script>
 </body>
 </html>
