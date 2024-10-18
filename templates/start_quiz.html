@@ -11,43 +11,62 @@
         <h1>{{ quiz.title }}</h1>
         <p>Time limit: {{ time_limit }} seconds</p>
 
-        <form action="" method="POST">
+        <!-- Quiz Form -->
+        <form id="quiz-form" action="" method="POST">
             {% for index, question in enumerate(quiz.questions) %}
             <div class="form-group">
                 <label>{{ index + 1 }}. {{ question.question_text }}</label>
                 <div>
                     {% for choice in question.choices.split(',') %}
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="question-{{ index }}" value="{{ choice }}">
+                        <input class="form-check-input" type="radio" name="question-{{ index }}" value="{{ choice }}" required>
                         <label class="form-check-label">{{ choice }}</label>
                     </div>
                     {% endfor %}
                 </div>
             </div>
             {% endfor %}
-            <button type="submit" class="btn btn-primary">Submit Quiz</button>
+            <button type="submit" class="btn btn-primary" id="submit-btn">Submit Quiz</button>
         </form>
 
+        <!-- Back to Dashboard Button -->
         <a href="/student_dashboard" class="btn btn-secondary mt-3">Back to Dashboard</a>
     </div>
 
-    <!-- Optional JavaScript for timer -->
+    <!-- Optional JavaScript for timer and form submission handling -->
     <script>
         let timeLeft = {{ time_limit }};
         const timerElement = document.createElement('p');
         document.body.insertBefore(timerElement, document.body.firstChild);
 
+        const form = document.getElementById('quiz-form');
+        const submitBtn = document.getElementById('submit-btn');
+
+        // Disable form resubmission
+        function disableSubmit() {
+            submitBtn.disabled = true;
+        }
+
+        // Timer countdown logic
         const timerInterval = setInterval(() => {
             timeLeft -= 1;
             timerElement.textContent = `Time left: ${timeLeft} seconds`;
 
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
-                alert('Time is up!');
-                document.forms[0].submit(); // Automatically submit the form when time is up
+                alert('Time is up! Your quiz will be submitted.');
+                disableSubmit();
+                form.submit();  // Automatically submit the form when time is up
             }
         }, 1000);
+
+        // Disable submit button when form is submitted
+        form.addEventListener('submit', () => {
+            disableSubmit();
+        });
     </script>
+
+    <!-- Footer -->
     <footer class="bg-dark text-white text-center py-3 mt-4">
         <p>© 2024 Cyusa Highschool. All rights reserved.</p>
     </footer>
