@@ -395,14 +395,13 @@ def leaderboard(module_id):
 def view_module(module_id):
     if current_user.role != 'student':
         return redirect(url_for('teacher_dashboard'))
-
     module = Module.query.get(module_id)
-
+    quizzes = module.quizzes  # Ensure quizzes are correctly fetched
+    print(f"Quizzes found: {quizzes}")  # Debugging statement
     if request.method == 'POST':
-        quiz_id = module.quizzes[0].id  # Assuming there's one quiz per module
+        quiz_id = quizzes[0].id  # Assuming there's one quiz per module
         return redirect(url_for('start_quiz', quiz_id=quiz_id))
-
-    return render_template('student_module_view.html', module=module)
+    return render_template('student_module_view.html', module=module, quizzes=quizzes)
 
 # Start Quiz (Student)
 @app.route('/student/quiz/<int:quiz_id>', methods=['GET', 'POST'])
