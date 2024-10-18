@@ -316,6 +316,13 @@ def add_question(module_id):
     flash('Question added successfully!', 'success')
     return redirect(url_for('manage_module', module_id=module_id))
 
+# Add a debug route
+@app.route('/debug')
+def debug():
+    from app import db, Question
+    questions = Question.query.all()
+    return str(questions)
+
 #timer handle
 @app.route('/teacher/module/<int:module_id>/set-timer', methods=['POST'])
 @login_required
