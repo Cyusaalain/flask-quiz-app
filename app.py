@@ -317,11 +317,10 @@ def add_question(module_id):
     return redirect(url_for('manage_module', module_id=module_id))
 
 # Add a debug route
-@app.route('/debug')
-def debug():
-    from app import db, Question
-    questions = Question.query.all()
-    return str(questions)
+@app.route('/debug_quizzes')
+def debug_quizzes():
+    quizzes = Quiz.query.all()
+    return str(quizzes)  # This will return the list of all quizzes as a string
 
 #timer handle
 @app.route('/teacher/module/<int:module_id>/set-timer', methods=['POST'])
