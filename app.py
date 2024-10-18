@@ -218,7 +218,7 @@ def manage_module(module_id):
             db.session.add(new_question)
             db.session.commit()
             flash('Question added successfully!', 'success')
-            
+
         elif 'set_timer' in request.form:
             time_limit = request.form['time_limit']
             quiz = Quiz.query.filter_by(module_id=module_id).first()
@@ -442,7 +442,8 @@ def start_quiz(quiz_id):
 
         return render_template('student_result.html', score=score, total=len(quiz.questions))
 
-    return render_template('start_quiz.html', quiz=quiz, time_limit=quiz.time_limit)
+    # Pass the enumerate function into the context
+    return render_template('start_quiz.html', quiz=quiz, time_limit=quiz.time_limit, enumerate=enumerate)
 
 # Run the app
 if __name__ == '__main__':
