@@ -189,23 +189,37 @@ def manage_module(module_id):
         return redirect(url_for('login'))
 
     module = Module.query.get(module_id)
+    
+    # If no quiz exists for this module, create one
+    quiz = Quiz.query.filter_by(module_id=module_id).first()
+    if not quiz:
+        quiz = Quiz(title=f"{module.title} Quiz", module_id=module_id)
+        db.session.add(quiz)
+        db.session.commit()
+
     all_students = User.query.filter_by(role='student').all()
     assigned_students = module.students
     unassigned_students = [student for student in all_students if student not in assigned_students]
+
     if request.method == 'POST':
         # Logic for updating terms, adding/removing students, and adding questions
         if 'add_question' in request.form:
             question_text = request.form['question_text']
-            choices = ','.join(request.form.getlist('choices'))  # Comma-separated
+            choices = ','.join(request.form.getlist('choices'))
             correct_answer = request.form['correct_answer']
-            quiz = Quiz.query.filter_by(module_id=module_id).first()
-            if quiz:
-                new_question = Question(question_text=question_text, choices=choices, correct_answer=correct_answer, quiz_id=quiz.id)
-                db.session.add(new_question)
-                db.session.commit()
-                flash('Question added successfully!', 'success')
+            
+            # Ensure quiz exists for the module
+            new_question = Question(
+                question_text=question_text,
+                choices=choices,
+                correct_answer=correct_answer,
+                quiz_id=quiz.id
+            )
+            db.session.add(new_question)
+            db.session.commit()
+            flash('Question added successfully!', 'success')
             else:
-                flash('No quiz found for this module.', 'error')
+            flash('No quiz found for this module.', 'error')
         elif 'set_timer' in request.form:
             time_limit = request.form['time_limit']
             quiz = Quiz.query.filter_by(module_id=module_id).first()
@@ -393,13 +407,19 @@ def leaderboard(module_id):
 def view_module(module_id):
     if current_user.role != 'student':
         return redirect(url_for('teacher_dashboard'))
+
     module = Module.query.get(module_id)
-    quizzes = module.quizzes  # Ensure quizzes are correctly fetched
-    print(f"Quizzes found: {quizzes}")  # Debugging statement
+    quizzes = module.quizzes
+
+    if not quizzes:
+        flash("No quiz is available for this module yet. Please check back later.", 'error')
+        return redirect(url_for('student_dashboard_view'))
+
+    quiz = quizzes[0]  # Assuming only one quiz per module
     if request.method == 'POST':
-        quiz_id = quizzes[0].id  # Assuming there's one quiz per module
-        return redirect(url_for('start_quiz', quiz_id=quiz_id))
-    return render_template('student_module_view.html', module=module, quizzes=quizzes)
+        return redirect(url_for('start_quiz', quiz_id=quiz.id))
+
+    return render_template('student_module_view.html', module=module, quiz=quiz)
 
 # Start Quiz (Student)
 @app.route('/student/quiz/<int:quiz_id>', methods=['GET', 'POST'])
