@@ -3,45 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz - {{ quiz.title }}</title>
+    <title>{{ quiz.title }}</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script>
-        let timeRemaining = {{ time_limit }};
-        function startTimer() {
-            const timerElement = document.getElementById("timer");
-            const interval = setInterval(() => {
-                if (timeRemaining <= 0) {
-                    clearInterval(interval);
-                    document.getElementById("quiz-form").submit(); // Auto-submit form when time is up
-                } else {
-                    timerElement.textContent = timeRemaining + " seconds remaining";
-                    timeRemaining--;
-                }
-            }, 1000);
-        }
-        window.onload = startTimer;
-    </script>
 </head>
 <body>
     <div class="container">
         <h1>{{ quiz.title }}</h1>
-        <p id="timer"></p>
+        <p>Time limit: {{ time_limit }} seconds</p>
 
-        <form id="quiz-form" action="{{ url_for('start_quiz', quiz_id=quiz.id) }}" method="POST">
-            {% for question in quiz.questions %}
-                <div class="form-group">
-                    <label>{{ loop.index }}. {{ question.question_text }}</label>
+        <form action="" method="POST">
+            {% for index, question in enumerate(quiz.questions) %}
+            <div class="form-group">
+                <label>{{ index + 1 }}. {{ question.question_text }}</label>
+                <div>
                     {% for choice in question.choices.split(',') %}
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="question-{{ loop.index0 }}" value="{{ choice }}">
+                        <input class="form-check-input" type="radio" name="question-{{ index }}" value="{{ choice }}">
                         <label class="form-check-label">{{ choice }}</label>
                     </div>
                     {% endfor %}
                 </div>
+            </div>
             {% endfor %}
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="submit" class="btn btn-primary">Submit Quiz</button>
         </form>
+
+        <a href="/student_dashboard" class="btn btn-secondary mt-3">Back to Dashboard</a>
     </div>
+
+    <!-- Optional JavaScript for timer -->
+    <script>
+        let timeLeft = {{ time_limit }};
+        const timerElement = document.createElement('p');
+        document.body.insertBefore(timerElement, document.body.firstChild);
+
+        const timerInterval = setInterval(() => {
+            timeLeft -= 1;
+            timerElement.textContent = `Time left: ${timeLeft} seconds`;
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                alert('Time is up!');
+                document.forms[0].submit(); // Automatically submit the form when time is up
+            }
+        }, 1000);
+    </script>
     <footer class="bg-dark text-white text-center py-3 mt-4">
         <p>© 2024 Cyusa Highschool. All rights reserved.</p>
     </footer>
