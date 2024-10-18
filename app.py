@@ -218,8 +218,7 @@ def manage_module(module_id):
             db.session.add(new_question)
             db.session.commit()
             flash('Question added successfully!', 'success')
-            else:
-            flash('No quiz found for this module.', 'error')
+            
         elif 'set_timer' in request.form:
             time_limit = request.form['time_limit']
             quiz = Quiz.query.filter_by(module_id=module_id).first()
