@@ -11,10 +11,14 @@
         <h1>{{ module.title }}</h1>
         <p>{{ module.terms_conditions }}</p>
 
-        <h3>Ready to Start the Quiz?</h3>
-        <form action="{{ url_for('start_quiz', quiz_id=module.quizzes[0].id) }}" method="POST">
-            <button type="submit" class="btn btn-success">Begin</button>
-        </form>
+        {% if module.quizzes %}
+            <h3>Ready to Start the Quiz?</h3>
+            <form action="{{ url_for('start_quiz', quiz_id=module.quizzes[0].id) }}" method="POST">
+                <button type="submit" class="btn btn-success">Begin</button>
+            </form>
+        {% else %}
+            <p class="text-danger">No quiz is available for this module yet. Please check back later.</p>
+        {% endif %}
 
         <a href="{{ url_for('student_dashboard_view') }}" class="btn btn-secondary mt-4">Back to Dashboard</a>
     </div>
