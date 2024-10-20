@@ -8,13 +8,20 @@
 </head>
 <body>
     <div class="container">
-        <h2>{{ module.title }} - Quiz</h2>
+        <h2>{{ module.title }}</h2>
 
         {% if quiz %}
+        <h2>Available Quizzes:</h2>
         <p><strong>Terms and Conditions:</strong> {{ module.terms_conditions }}</p>
-        <form action="{{ url_for('start_quiz', quiz_id=quiz.id) }}" method="POST">
-            <button type="submit" class="btn btn-primary">Start Quiz</button>
-        </form>
+        <ul>
+            {% for quiz in quizzes %}
+                <li>{{ quiz.title }} - 
+                    <form action="{{ url_for('start_quiz', quiz_id=quiz.id) }}" method="POST">
+                        <button type="submit" class="btn btn-primary">Start Quiz</button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
         {% else %}
         <p>No quiz is available for this module yet. Please check back later.</p>
         {% endif %}
