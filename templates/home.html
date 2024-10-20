@@ -10,7 +10,7 @@
             font-family: 'Arial, sans-serif';
         }
         header {
-            height: 22vh;
+            height: 22vh;  /* Adjust height as needed */
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -18,9 +18,18 @@
             color: white;
             background-color: #007bff;
         }
+        .logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 12px;  /* Adjust the size of your logo */
+            height: auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
         .login-buttons {
             display: flex;
             gap: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         .content-center {
             text-align: center;
@@ -42,11 +51,12 @@
                 opacity: 1;
             }
         }
-    </style>    
+    </style>        
 </head>
 <body>
     <!-- Header Section -->
     <header class="py-5">
+        <img src="images/schoollogo.jpg" alt="School Logo" class="logo">
         <div class="content-center">
             <h1>Welcome to Cyusa Highschool</h1>
             <p>Explore the latest updates and articles about our school.</p>
