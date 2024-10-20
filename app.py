@@ -115,10 +115,7 @@ def teacher_dashboard():
 
     # Fetch all modules
     modules = Module.query.all()
-    # Fetch all students
-    students = User.query.filter_by(role='student').all()
-
-    return render_template('teacher_dashboard.html', modules=modules, students=students)
+    return render_template('teacher_dashboard.html', modules=modules)
 
 # Student Dashboard Route
 @app.route('/student_dashboard')
@@ -137,52 +134,131 @@ def student_dashboard_view():
 def add_module():
     if current_user.role != 'teacher':
         return redirect(url_for('student_dashboard_view'))
-
     module_title = request.form['module_title']
     terms_conditions = request.form['terms_conditions']
     new_module = Module(title=module_title, terms_conditions=terms_conditions)
     db.session.add(new_module)
     db.session.commit()
+    flash('Module created successfully!', 'success')
+    return redirect(url_for('teacher_dashboard'))
+
+# Set Terms and Conditions for a Module
+@app.route('/teacher/module/<int:module_id>/set-terms-conditions', methods=['POST'])
+@login_required
+def set_terms_conditions(module_id):
+    if current_user.role != 'teacher':
+        flash('Access denied!', 'error')
+        return redirect(url_for('teacher_dashboard'))
+    
+    module = Module.query.get_or_404(module_id)
+    
+    # Fetch the updated terms and conditions from the form
+    terms_conditions = request.form['terms_conditions']
+    
+    if terms_conditions:
+        module.terms_conditions = terms_conditions
+        db.session.commit()
+        flash('Terms and conditions updated successfully!', 'success')
+    else:
+        flash('Please enter valid terms and conditions.', 'error')
+    
+    return redirect(url_for('manage_module', module_id=module.id))
+
+# Delete Module (Teacher)
+@app.route('/teacher/module/<int:module_id>/delete', methods=['POST'])
+@login_required
+def delete_module(module_id):
+    if current_user.role != 'teacher':
+        return redirect(url_for('login'))
+
+    module = Module.query.get(module_id)
+    if not module:
+        flash('Module not found.', 'error')
+        return redirect(url_for('teacher_dashboard'))
+
+    db.session.delete(module)
+    db.session.commit()
+    flash('Module deleted successfully!', 'success')
     return redirect(url_for('teacher_dashboard'))
 
 # Manage Module (Teacher)
-@app.route('/teacher/module/<int:module_id>', methods=['GET'])
+@app.route('/teacher/module/<int:module_id>', methods=['GET', 'POST'])
+@login_required
 def manage_module(module_id):
-    # Fetch the module from the database
+    if current_user.role != 'teacher':
+        return redirect(url_for('login'))
+
     module = Module.query.get(module_id)
     
-    if not module:
-        # Handle the case where the module doesn't exist
-        return "Module not found", 404
+    # If no quiz exists for this module, create one
+    quiz = Quiz.query.filter_by(module_id=module_id).first()
+    if not quiz:
+        quiz = Quiz(title=f"{module.title} Quiz", module_id=module_id)
+        db.session.add(quiz)
+        db.session.commit()
 
-    return render_template('manage_module.html', module=module)
+    all_students = User.query.filter_by(role='student').all()
+    assigned_students = module.students
+    unassigned_students = [student for student in all_students if student not in assigned_students]
 
+    if request.method == 'POST':
+        # Logic for updating terms, adding/removing students, and adding questions
+        if 'add_question' in request.form:
+            question_text = request.form['question_text']
+            choices = ','.join(request.form.getlist('choices'))
+            correct_answer = request.form['correct_answer']
+            
+            # Ensure quiz exists for the module
+            new_question = Question(
+                question_text=question_text,
+                choices=choices,
+                correct_answer=correct_answer,
+                quiz_id=quiz.id
+            )
+            db.session.add(new_question)
+            db.session.commit()
+            flash('Question added successfully!', 'success')
+
+        elif 'set_timer' in request.form:
+            time_limit = request.form['time_limit']
+            quiz = Quiz.query.filter_by(module_id=module_id).first()
+            if quiz:
+                quiz.time_limit = int(time_limit)
+                db.session.commit()
+                flash(f'Timer set to {time_limit} seconds for the quiz.', 'success')
+        elif 'remove_student' in request.form:
+            student_id = request.form['student_id']
+            student = User.query.get(student_id)
+            if student in module.students:
+                module.students.remove(student)
+                db.session.commit()
+                flash(f'Student {student.username} removed from module {module.title}', 'info')
+        return redirect(url_for('manage_module', module_id=module_id))
+    pass
+    
+    return render_template('manage_module.html', module=module, assigned_students=assigned_students, unassigned_students=unassigned_students)
 # Assign Students to a Module
 @app.route('/teacher/module/<int:module_id>/assign-students', methods=['POST'])
 @login_required
 def assign_students(module_id):
     if current_user.role != 'teacher':
         return redirect(url_for('login'))
-
-    # Get the module by ID
+    
     module = Module.query.get(module_id)
     if not module:
         flash('Module not found.', 'error')
         return redirect(url_for('teacher_dashboard'))
-
-    # Get the list of student IDs from the form
-    student_ids = request.form.getlist('students')
-    if not student_ids:
-        flash('No students selected.', 'error')
-        return redirect(url_for('manage_module', module_id=module_id))
-
-    # Fetch the students by their IDs and add them to the module
-    students = User.query.filter(User.id.in_(student_ids)).all()
-    for student in students:
-        if student not in module.students:
-            module.students.append(student)
-    db.session.commit()
-    flash('Students successfully assigned!', 'success')
+    
+    student_id = request.form.get('student_id')
+    student = User.query.get(student_id)
+    
+    if student and student not in module.students:
+        module.students.append(student)
+        db.session.commit()
+        flash('Student assigned successfully!', 'success')
+    else:
+        flash('Student not found or already assigned.', 'error')
+    
     return redirect(url_for('manage_module', module_id=module_id))
 
 # Remove Student from Module
@@ -223,38 +299,41 @@ def assign_quiz(module_id):
 def add_question(module_id):
     if current_user.role != 'teacher':
         return redirect(url_for('login'))
-
+    
     question_text = request.form['question_text']
-    choices = request.form.getlist('choices')  # Fetching choices from form
+    choices = request.form.getlist('choices[]')  # Important to match the name in the form
     correct_answer = request.form['correct_answer']
-
+    
     # Ensure all fields are filled
     if not question_text or not choices or not correct_answer:
         flash('Please fill in all fields.', 'error')
         return redirect(url_for('manage_module', module_id=module_id))
-
-    # Join choices to save them as a single string (assuming comma-separated choices)
+    
     choices_str = ','.join(choices)
-
-    # Create new question and associate it with the module's quiz
-    quiz = Quiz.query.filter_by(module_id=module_id).first()  # Get the quiz for the module
+    
+    quiz = Quiz.query.filter_by(module_id=module_id).first()
     if not quiz:
         flash('Quiz not found for this module.', 'error')
         return redirect(url_for('manage_module', module_id=module_id))
-
+    
     new_question = Question(
         question_text=question_text,
         choices=choices_str,
         correct_answer=correct_answer,
         quiz_id=quiz.id
     )
-
-    # Save the question to the database
+    
     db.session.add(new_question)
     db.session.commit()
-
+    
     flash('Question added successfully!', 'success')
     return redirect(url_for('manage_module', module_id=module_id))
+
+# Add a debug route
+@app.route('/debug_quizzes')
+def debug_quizzes():
+    quizzes = Quiz.query.all()
+    return str(quizzes)  # This will return the list of all quizzes as a string
 
 #timer handle
 @app.route('/teacher/module/<int:module_id>/set-timer', methods=['POST'])
@@ -292,12 +371,34 @@ def set_timer(module_id):
 def leaderboard(module_id):
     if current_user.role != 'teacher':
         return redirect(url_for('student_dashboard_view'))
-
+    
     module = Module.query.get(module_id)
-    quizzes = module.quizzes
-    results = QuizResult.query.join(Quiz).filter(Quiz.module_id == module_id).order_by(QuizResult.score.desc()).all()
+    if not module:
+        flash('Module not found.', 'error')
+        return redirect(url_for('teacher_dashboard'))
 
-    return render_template('leaderboard.html', results=results, module=module)
+    quizzes = module.quizzes
+    students = module.students
+    results = []
+
+    for student in students:
+        total_score = 0
+        quizzes_completed = 0
+
+        for quiz in quizzes:
+            result = QuizResult.query.filter_by(quiz_id=quiz.id, student_id=student.id).first()
+            if result:
+                total_score += result.score
+                quizzes_completed += 1
+
+        results.append({
+            'student': student,
+            'total_score': total_score,
+            'quizzes_completed': quizzes_completed
+        })
+
+    results = sorted(results, key=lambda x: x['total_score'], reverse=True)
+    return render_template('leaderboard.html', results=results, module=module, enumerate=enumerate)
 
 # View Module and Start Quiz (Student)
 @app.route('/student/module/<int:module_id>', methods=['GET', 'POST'])
@@ -307,13 +408,17 @@ def view_module(module_id):
         return redirect(url_for('teacher_dashboard'))
 
     module = Module.query.get(module_id)
+    quizzes = module.quizzes
 
+    if not quizzes:
+        flash("No quiz is available for this module yet. Please check back later.", 'error')
+        return redirect(url_for('student_dashboard_view'))
+
+    quiz = quizzes[0]  # Assuming only one quiz per module
     if request.method == 'POST':
-        quiz_id = request.form['quiz_id']
-        quiz = Quiz.query.get(quiz_id)
-        return redirect(url_for('start_quiz', quiz_id=quiz_id))
+        return redirect(url_for('start_quiz', quiz_id=quiz.id))
 
-    return render_template('student_module_view.html', module=module)
+    return render_template('student_module_view.html', module=module, quiz=quiz)
 
 # Start Quiz (Student)
 @app.route('/student/quiz/<int:quiz_id>', methods=['GET', 'POST'])
@@ -337,8 +442,8 @@ def start_quiz(quiz_id):
 
         return render_template('student_result.html', score=score, total=len(quiz.questions))
 
-    time_limit = quiz.time_limit
-    return render_template('start_quiz.html', quiz=quiz, time_limit=time_limit)
+    # Pass the enumerate function into the context
+    return render_template('start_quiz.html', quiz=quiz, time_limit=quiz.time_limit, enumerate=enumerate)
 
 # Run the app
 if __name__ == '__main__':

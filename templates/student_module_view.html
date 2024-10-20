@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ module.title }} - Quiz</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h2>{{ module.title }} - Quiz</h2>
+
+        {% if quiz %}
+        <p><strong>Terms and Conditions:</strong> {{ module.terms_conditions }}</p>
+        <form action="{{ url_for('start_quiz', quiz_id=quiz.id) }}" method="POST">
+            <button type="submit" class="btn btn-primary">Start Quiz</button>
+        </form>
+        {% else %}
+        <p>No quiz is available for this module yet. Please check back later.</p>
+        {% endif %}
+
+        <a href="{{ url_for('student_dashboard_view') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-4">
+        <p>© 2024 Cyusa Highschool. All rights reserved.</p>
+    </footer>
+</body>
+</html>

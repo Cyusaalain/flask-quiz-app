@@ -10,67 +10,33 @@
     <div class="container">
         <h1>Manage Module: {{ module.title }}</h1>
 
-        <!-- Add a New Question to the Module -->
-        <h3>Create a New Question</h3>
-        <form action="/teacher/module/{{ module.id }}/add-question" method="POST">
+        <!-- Add Terms and Conditions for the Quiz -->
+        <h3>Set Terms and Conditions</h3>
+        <form action="{{ url_for('set_terms_conditions', module_id=module.id) }}" method="POST">
             <div class="form-group">
-                <label for="question_text">Question:</label>
-                <textarea class="form-control" id="question_text" name="question_text" rows="3" required></textarea>
+                <label for="terms_conditions">Terms and Conditions:</label>
+                <textarea class="form-control" id="terms_conditions" name="terms_conditions" rows="4" required>{{ module.terms_conditions }}</textarea>
             </div>
-        
-            <h4>Choices:</h4>
-            <div id="choices_container">
-                <div class="form-group">
-                    <label for="choice1">Choice 1:</label>
-                    <input type="text" class="form-control" id="choice1" name="choices[]" required>
-                </div>
-                <div class="form-group">
-                    <label for="choice2">Choice 2:</label>
-                    <input type="text" class="form-control" id="choice2" name="choices[]" required>
-                </div>
-            </div>
-        
-            <div class="form-group">
-                <label for="correct_answer">Correct Answer:</label>
-                <input type="text" class="form-control" id="correct_answer" name="correct_answer" required>
-            </div>
-        
-            <button type="submit" class="btn btn-primary">Add Question</button>
-        </form>               
+        </form>
 
-        <!-- List of Questions -->
-        <h3 class="mt-4">Questions in this Module</h3>
+        <!-- Unassigned Students -->
+        <h3 class="mt-4">Unassigned Students</h3>
         <ul class="list-group">
-            {% for question in module.questions %}
+            {% for student in unassigned_students %}
             <li class="list-group-item">
-                <strong>{{ question.text }}</strong>
-                <ul>
-                    {% for choice in question.choices.split(',') %}
-                    <li>{{ choice }}</li>
-                    {% endfor %}
-                </ul>
-                <a href="{{ url_for('edit_question', module_id=module.id, question_id=question.id) }}" class="btn btn-warning btn-sm">Edit</a>
-                <form action="{{ url_for('delete_question', module_id=module.id, question_id=question.id) }}" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                {{ student.username }}
+                <form action="{{ url_for('assign_students', module_id=module.id) }}" method="POST" style="display:inline;">
+                    <input type="hidden" name="student_id" value="{{ student.id }}">
+                    <button type="submit" class="btn btn-primary btn-sm">Assign</button>
                 </form>
             </li>
             {% endfor %}
         </ul>
 
-        <!-- Set Timer for the Quiz -->
-        <h3 class="mt-4">Set Timer for the Quiz</h3>
-        <form action="{{ url_for('set_timer', module_id=module.id) }}" method="POST">
-            <div class="form-group">
-                <label for="time_limit">Time Limit (in minutes):</label>
-                <input type="number" class="form-control" id="time_limit" name="time_limit" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Set Timer</button>
-        </form>        
-
-        <!-- Remove Students from Module -->
-        <h3 class="mt-4">Remove Students from this Module</h3>
+        <!-- Assigned Students -->
+        <h3>Assigned Students</h3>
         <ul class="list-group">
-            {% for student in module.students %}
+            {% for student in assigned_students %}
             <li class="list-group-item">
                 {{ student.username }}
                 <form action="{{ url_for('remove_student', module_id=module.id, student_id=student.id) }}" method="POST" style="display:inline;">
@@ -80,20 +46,77 @@
             {% endfor %}
         </ul>
 
-        <a href="{{ url_for('teacher_dashboard') }}" class="btn btn-secondary mt-4">Back to Dashboard</a>
-    </div>
-
-    <footer class="bg-dark text-white text-center py-3 mt-4">
-        <p>© 2024 Cyusa Highschool. All rights reserved.</p>
-    </footer>
-
-    <!-- Script to dynamically add more choice fields -->
-    <script>
-        document.getElementById('add_choice_btn').addEventListener('click', function() {
-            var choiceCount = document.querySelectorAll('#choices_container .form-group').length + 1;
-            var choiceInput = '<div class="form-group"><label for="choice' + choiceCount + '">Choice ' + choiceCount + ':</label><input type="text" class="form-control" id="choice' + choiceCount + '" name="choices[]" required></div>';
-            document.getElementById('choices_container').insertAdjacentHTML('beforeend', choiceInput);
-        });
-    </script>
-</body>
-</html>
+         <!-- Add a New Question to the Module -->
+         <h3 class="mt-4" id="current-question-title">Create a New Question</h3>
+         <form id="question-form" action="{{ url_for('add_question', module_id=module.id) }}" method="POST">
+             <div class="form-group">
+                 <label for="question_text">Question:</label>
+                 <textarea class="form-control" id="question_text" name="question_text" rows="3" required></textarea>
+             </div>
+             <h4>Choices:</h4>
+             <div id="choices_container">
+                 <div class="form-group">
+                     <label for="choice1">Choice 1:</label>
+                     <input type="text" class="form-control" id="choice1" name="choices[]" required>
+                 </div>
+                 <div class="form-group">
+                     <label for="choice2">Choice 2:</label>
+                     <input type="text" class="form-control" id="choice2" name="choices[]" required>
+                 </div>
+             </div>
+             <div class="form-group">
+                 <label for="correct_answer">Correct Answer:</label>
+                 <input type="text" class="form-control" id="correct_answer" name="correct_answer" required>
+             </div>
+             <button type="submit" class="btn btn-primary">Add Question</button>
+             <button type="button" id="next-question" class="btn btn-secondary">Add Next Question</button>
+         </form>
+ 
+         <!-- Set Timer for the Quiz -->
+         <h3 class="mt-4">Set Timer for the Quiz</h3>
+         <form action="{{ url_for('set_timer', module_id=module.id) }}" method="POST">
+             <div class="form-group">
+                 <label for="time_limit">Time Limit (in minutes):</label>
+                 <input type="number" class="form-control" id="time_limit" name="time_limit" required>
+             </div>
+             <button type="submit" class="btn btn-primary">Set Timer</button>
+         </form>
+ 
+         <a href="{{ url_for('teacher_dashboard') }}" class="btn btn-secondary mt-4">Back to Dashboard</a>
+     </div>
+ 
+     <footer class="bg-dark text-white text-center py-3 mt-4">
+         <p>© 2024 Cyusa Highschool. All rights reserved.</p>
+     </footer>
+ 
+     <script>
+         document.getElementById('question-form').addEventListener('submit', (event) => {
+             event.preventDefault();  // Prevent the form from submitting the normal way
+ 
+             const form = event.target;
+             const formData = new FormData(form);
+             
+             // Send data using fetch for AJAX-like behavior
+             fetch(form.action, {
+                 method: 'POST',
+                 body: formData
+             }).then(response => {
+                 if (response.ok) {
+                     // After successful question submission, reset the form
+                     form.reset();
+                     alert('Question added successfully! You can now add another question.');
+                 } else {
+                     alert('Error adding question. Please try again.');
+                 }
+             }).catch(error => {
+                 console.error('Error:', error);
+             });
+         });
+ 
+         document.getElementById('next-question').addEventListener('click', () => {
+             // Trigger form submission programmatically for the next question
+             document.getElementById('question-form').requestSubmit();
+         });
+     </script>
+ </body>
+ </html>
