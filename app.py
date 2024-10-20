@@ -176,9 +176,12 @@ def delete_module(module_id):
         flash('Module not found.', 'error')
         return redirect(url_for('teacher_dashboard'))
 
+    # Manually delete quizzes associated with the module
+    Quiz.query.filter_by(module_id=module.id).delete()
+    
     db.session.delete(module)
     db.session.commit()
-    flash('Module deleted successfully!', 'success')
+    flash('Module and associated quizzes deleted successfully!', 'success')
     return redirect(url_for('teacher_dashboard'))
 
 # Manage Module (Teacher)
