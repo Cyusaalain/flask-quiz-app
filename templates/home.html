@@ -10,13 +10,13 @@
             font-family: 'Arial, sans-serif';
         }
         header {
-            height: 20vh;  /* Adjust height as needed */
+            height: 22vh;
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 20px;
             color: white;
-            background-color: #007bff;  /* Keep the header background color */
+            background-color: #007bff;
         }
         .login-buttons {
             display: flex;
@@ -29,7 +29,20 @@
         footer {
             background-color: #343a40;
         }
-    </style>
+        .card {
+            animation: slideIn 1s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>    
 </head>
 <body>
     <!-- Header Section -->
