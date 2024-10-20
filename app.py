@@ -412,21 +412,17 @@ def leaderboard(module_id):
 @app.route('/student/module/<int:module_id>', methods=['GET', 'POST'])
 @login_required
 def view_module(module_id):
-    if current_user.role != 'student':
-        return redirect(url_for('teacher_dashboard'))
-
     module = Module.query.get(module_id)
-    quizzes = module.quizzes
-
-    if not quizzes:
-        flash("No quiz is available for this module yet. Please check back later.", 'error')
-        return redirect(url_for('student_dashboard_view'))
-
-    quiz = quizzes[0]  # Assuming only one quiz per module
+    if not module:
+        flash('Module not found!', 'error')
+        return redirect(url_for('student_dashboard'))
+    
+    quizzes = module.quizzes  # This should fetch all quizzes for the module
     if request.method == 'POST':
-        return redirect(url_for('start_quiz', quiz_id=quiz.id))
-
-    return render_template('student_module_view.html', module=module, quiz=quiz)
+        quiz_id = quizzes[0].id  # Assuming there's one quiz per module
+        return redirect(url_for('start_quiz', quiz_id=quiz_id))
+    
+    return render_template('student_module_view.html', module=module, quizzes=quizzes)
 
 # Start Quiz (Student)
 @app.route('/student/quiz/<int:quiz_id>', methods=['GET', 'POST'])
