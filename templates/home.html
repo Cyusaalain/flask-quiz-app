@@ -9,23 +9,6 @@
         body {
             font-family: 'Arial, sans-serif';
         }
-        header {
-            background-image: url('school.png');  /* Add a nice background image */
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-        }
-        .login-buttons {
-            display: flex;
-            gap: 10px;
-        }
-        .content-center {
-            text-align: center;
-            flex: 1;
-        }
         footer {
             background-color: #343a40;
         }
@@ -33,7 +16,7 @@
 </head>
 <body>
     <!-- Header Section -->
-    <header class="bg-primary text-white py-5">
+    <header class="bg-primary text-white py-5" style="background-image: url('school.png'); background-size: cover; background-position: center;">
         <div class="login-buttons">
             <a href="{{ url_for('teacher_login') }}" class="btn btn-secondary btn-lg">Teacher Login</a>
             <a href="{{ url_for('student_login') }}" class="btn btn-info btn-lg">Student Login</a>
