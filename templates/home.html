@@ -13,6 +13,18 @@
             background-image: url('school.png');  /* Add a nice background image */
             background-size: cover;
             background-position: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+        }
+        .login-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .content-center {
+            text-align: center;
+            flex: 1;
         }
         footer {
             background-color: #343a40;
@@ -21,12 +33,12 @@
 </head>
 <body>
     <!-- Header Section -->
-    <header class="bg-primary text-white py-5 d-flex justify-content-between align-items-center">
-        <div>
-            <a href="{{ url_for('teacher_login') }}" class="btn btn-secondary btn-lg mx-2">Teacher Login</a>
-            <a href="{{ url_for('student_login') }}" class="btn btn-info btn-lg mx-2">Student Login</a>
+    <header class="bg-primary text-white py-5">
+        <div class="login-buttons">
+            <a href="{{ url_for('teacher_login') }}" class="btn btn-secondary btn-lg">Teacher Login</a>
+            <a href="{{ url_for('student_login') }}" class="btn btn-info btn-lg">Student Login</a>
         </div>
-        <div class="text-center">
+        <div class="content-center">
             <h1>Welcome to Cyusa Highschool</h1>
             <p>Explore the latest updates and articles about our school.</p>
         </div>
@@ -37,10 +49,10 @@
         <!-- Articles Section -->
         <section id="articles" class="mb-5">
             <h2>Latest Articles</h2>
-            <div class="row d-flex justify-content-start">
+            <div class="row">
                 <!-- Example Article 1 -->
                 <div class="col-md-4">
-                    <div class="card">
+                    <div class="card mb-3">
                         <img src="article1.jpg" class="card-img-top" alt="Article Image">
                         <div class="card-body">
                             <h5 class="card-title">Article Title 1</h5>
@@ -51,7 +63,7 @@
                 </div>
                 <!-- Example Article 2 -->
                 <div class="col-md-4">
-                    <div class="card">
+                    <div class="card mb-3">
                         <img src="article2.jpg" class="card-img-top" alt="Article Image">
                         <div class="card-body">
                             <h5 class="card-title">Article Title 2</h5>
@@ -59,26 +71,18 @@
                             <a href="#" class="btn btn-primary">Read More</a>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="card">
-                            <img src="article2.jpg" class="card-img-top" alt="Article Image">
-                            <div class="card-body">
-                                <h5 class="card-title">Article Title 3</h5>
-                                <p class="card-text">Short description about the article...</p>
-                                <a href="#" class="btn btn-primary">Read More</a>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="card">
-                                    <img src="article2.jpg" class="card-img-top" alt="Article Image">
-                                    <div class="card-body">
-                                        <h5 class="card-title">Article Title 4</h5>
-                                        <p class="card-text">Short description about the article...</p>
-                                        <a href="#" class="btn btn-primary">Read More</a>
-                                    </div>
-                                </div>
-                        </div>
                 </div>
-                <!-- Add more articles here -->
+                <!-- Example Article 3 -->
+                <div class="col-md-4">
+                    <div class="card mb-3">
+                        <img src="article3.jpg" class="card-img-top" alt="Article Image">
+                        <div class="card-body">
+                            <h5 class="card-title">Article Title 3</h5>
+                            <p class="card-text">Short description about the article...</p>
+                            <a href="#" class="btn btn-primary">Read More</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
     </div>
