@@ -332,8 +332,16 @@ def add_question(module_id):
 # Add a debug route
 @app.route('/debug_quizzes')
 def debug_quizzes():
-    quizzes = Quiz.query.all()
-    return str(quizzes)  # This will return the list of all quizzes as a string
+    quizzes = Quiz.query.all()  # Fetch all quizzes from the database
+    result = []
+    for quiz in quizzes:
+        questions = [{'question_text': q.question_text, 'choices': q.choices, 'correct_answer': q.correct_answer} for q in quiz.questions]
+        result.append({
+            'quiz_title': quiz.title,
+            'module_id': quiz.module_id,
+            'questions': questions
+        })
+    return {'quizzes': result}
 
 #timer handle
 @app.route('/teacher/module/<int:module_id>/set-timer', methods=['POST'])
