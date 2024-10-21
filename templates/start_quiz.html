@@ -17,8 +17,8 @@
                 <div class="form-group">
                     <label>{{ index + 1 }}. {{ question.question_text }}</label>
                     <div>
-                        {{ form['question_' ~ index].label }}
-                        {{ form['question_' ~ index] }}
+                        {{ form['question_' + loop.index0].label }}
+                        {{ form['question_' + loop.index0] }}
                     </div>
                 </div>
             {% endfor %}

@@ -69,7 +69,6 @@ class QuizResult(db.Model):
     quiz = db.relationship('Quiz', backref='results')
 
 class QuizForm(FlaskForm):
-    # Dynamically generate fields for each question
     def __init__(self, quiz, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for index, question in enumerate(quiz.questions):
