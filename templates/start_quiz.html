@@ -17,13 +17,13 @@
                 <div class="form-group">
                     <label>{{ index + 1 }}. {{ question.question_text }}</label>
                     <div>
-                        {{ form['question_' + index].label }}
-                        {{ form['question_' + index] }}
+                        {{ form['question_' ~ index].label }}
+                        {{ form['question_' ~ index] }}
                     </div>
                 </div>
             {% endfor %}
-            {{ form.submit(class="btn btn-primary") }}
-        </form>                             
+            <button id="submit-btn" type="submit" class="btn btn-primary">Submit Quiz</button>
+        </form>
 
         <!-- Back to Dashboard Button -->
         <a href="{{ url_for('student_dashboard_view') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
@@ -35,7 +35,7 @@
         document.body.insertBefore(timerElement, document.body.firstChild);
         const form = document.getElementById('quiz-form');
         const submitBtn = document.getElementById('submit-btn');
-        
+
         function disableSubmit() {
             submitBtn.disabled = true;
         }
@@ -50,6 +50,7 @@
                 form.submit();  // Automatically submit the form when time is up
             }
         }, 1000);
+
         form.addEventListener('submit', (e) => {
             disableSubmit();
         });
