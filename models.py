@@ -1,4 +1,4 @@
-from your_database import db  # Import SQLAlchemy instance from your database setup
+from quizapp import db  # type: ignore # Import SQLAlchemy instance from your database setup
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # Define a User model to store user data
