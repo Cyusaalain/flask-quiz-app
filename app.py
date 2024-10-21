@@ -465,18 +465,26 @@ def start_quiz(quiz_id):
         flash("No questions available for this quiz.")
         return redirect(url_for('student_dashboard_view'))
 
-    form = QuizForm()  # Create the form object
-    if form.validate_on_submit():   
-        print("Form Data: ", request.form)
+    form = QuizForm()
+    user_answers = []
+    if form.validate_on_submit():
+        print("Form Data: ", request.form) 
         score = 0
         for index, question in enumerate(quiz.questions):
             user_answer = request.form.get(f'question-{index}')
-            if user_answer == question.correct_answer:
+            is_correct = user_answer == question.correct_answer
+            if is_correct:
                 score += 1
+            user_answers.append({
+                'question': question.question_text,
+                'user_answer': user_answer,
+                'correct_answer': question.correct_answer,
+                'is_correct': is_correct
+            })
         new_result = QuizResult(student_id=current_user.id, quiz_id=quiz.id, score=score)
         db.session.add(new_result)
         db.session.commit()
-        return render_template('student_result.html', score=score, total=len(quiz.questions))
+        return render_template('student_result.html', score=score, total=len(quiz.questions), user_answers=user_answers)
 
     return render_template('start_quiz.html', quiz=quiz, time_limit=quiz.time_limit, form=form, enumerate=enumerate)
 
