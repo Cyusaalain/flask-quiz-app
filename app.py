@@ -463,7 +463,7 @@ def start_quiz(quiz_id):
     quiz = Quiz.query.get(quiz_id)
     if not quiz.questions:
         flash("No questions available for this quiz.")
-        return redirect(url_for('student_dashboard'))
+        return redirect(url_for('student_dashboard_view'))
     
     form = QuizForm()  # Create the form object
     if form.validate_on_submit():
