@@ -12,37 +12,40 @@
         <p>Time limit: {{ time_limit }} seconds</p>
 
         <!-- Quiz Form -->
-        <form action="" method="POST">
+        <form id="quiz-form" action="" method="POST">
+            <!-- Include hidden CSRF token if using Flask-WTF -->
+            {{ form.hidden_tag() }}
+
             {% for index, question in enumerate(quiz.questions) %}
             <div class="form-group">
                 <label>{{ index + 1 }}. {{ question.question_text }}</label>
                 <div>
                     {% for choice in question.choices.split(',') %}
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="question-{{ index }}" value="{{ choice }}">
+                        <input class="form-check-input" type="radio" name="question-{{ index }}" value="{{ choice }}" required>
                         <label class="form-check-label">{{ choice }}</label>
                     </div>
                     {% endfor %}
                 </div>
             </div>
             {% endfor %}
-            <button type="submit" class="btn btn-primary">Submit Quiz</button>
+            <button id="submit-btn" type="submit" class="btn btn-primary">Submit Quiz</button>
         </form>        
 
         <!-- Back to Dashboard Button -->
         <a href="/student_dashboard" class="btn btn-secondary mt-3">Back to Dashboard</a>
     </div>
 
-    <!-- Optional JavaScript for timer and form submission handling -->
+    <!-- Timer Logic and Form Submission Handling -->
     <script>
-        let timeLeft = { time_limit };
+        let timeLeft = {{ time_limit }};
         const timerElement = document.createElement('p');
         document.body.insertBefore(timerElement, document.body.firstChild);
 
         const form = document.getElementById('quiz-form');
         const submitBtn = document.getElementById('submit-btn');
 
-        // Disable form resubmission
+        // Disable submit button after form submission
         function disableSubmit() {
             submitBtn.disabled = true;
         }
@@ -60,8 +63,8 @@
             }
         }, 1000);
 
-        // Disable submit button when form is submitted
-        form.addEventListener('submit', () => {
+        // Disable submit button when the form is submitted
+        form.addEventListener('submit', (e) => {
             disableSubmit();
         });
     </script>

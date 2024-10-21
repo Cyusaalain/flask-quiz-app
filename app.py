@@ -445,7 +445,6 @@ def view_module(module_id):
 
     return render_template('student_module_view.html', module=module, quizzes=quizzes)
 
-# Start Quiz (Student)
 @app.route('/student/quiz/<int:quiz_id>', methods=['GET', 'POST'])
 @login_required
 def start_quiz(quiz_id):
@@ -454,7 +453,13 @@ def start_quiz(quiz_id):
 
     quiz = Quiz.query.get(quiz_id)
 
+    # Check if quiz has questions
+    if not quiz.questions:
+        flash("No questions available for this quiz.")
+        return redirect(url_for('student_dashboard'))
+
     if request.method == 'POST':
+        print("Form Data: ", request.form)  # Debugging
         score = 0
         for index, question in enumerate(quiz.questions):
             user_answer = request.form.get(f'question-{index}')
@@ -467,7 +472,6 @@ def start_quiz(quiz_id):
 
         return render_template('student_result.html', score=score, total=len(quiz.questions))
 
-    # Pass the enumerate function into the context
     return render_template('start_quiz.html', quiz=quiz, time_limit=quiz.time_limit, enumerate=enumerate)
 
 # Run the app
