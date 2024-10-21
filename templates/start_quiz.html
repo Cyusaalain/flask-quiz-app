@@ -10,12 +10,9 @@
     <div class="container">
         <h1>{{ quiz.title }}</h1>
         <p>Time limit: {{ time_limit }} seconds</p>
-
         <!-- Quiz Form -->
         <form id="quiz-form" action="" method="POST">
-            <!-- Include hidden CSRF token if using Flask-WTF -->
-            {{ form.hidden_tag() }}
-
+            {{ form.hidden_tag() }}  <!-- Ensure CSRF token is included -->
             {% for index, question in enumerate(quiz.questions) %}
             <div class="form-group">
                 <label>{{ index + 1 }}. {{ question.question_text }}</label>
@@ -30,31 +27,26 @@
             </div>
             {% endfor %}
             <button id="submit-btn" type="submit" class="btn btn-primary">Submit Quiz</button>
-        </form>        
+        </form>
 
         <!-- Back to Dashboard Button -->
         <a href="/student_dashboard" class="btn btn-secondary mt-3">Back to Dashboard</a>
     </div>
-
     <!-- Timer Logic and Form Submission Handling -->
     <script>
         let timeLeft = {{ time_limit }};
         const timerElement = document.createElement('p');
         document.body.insertBefore(timerElement, document.body.firstChild);
-
         const form = document.getElementById('quiz-form');
         const submitBtn = document.getElementById('submit-btn');
-
-        // Disable submit button after form submission
+        
         function disableSubmit() {
             submitBtn.disabled = true;
         }
-
-        // Timer countdown logic
+        
         const timerInterval = setInterval(() => {
             timeLeft -= 1;
             timerElement.textContent = `Time left: ${timeLeft} seconds`;
-
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
                 alert('Time is up! Your quiz will be submitted.');
@@ -62,13 +54,11 @@
                 form.submit();  // Automatically submit the form when time is up
             }
         }, 1000);
-
-        // Disable submit button when the form is submitted
+        
         form.addEventListener('submit', (e) => {
             disableSubmit();
         });
     </script>
-
     <!-- Footer -->
     <footer class="bg-dark text-white text-center py-3 mt-4">
         <p>© 2024 Cyusa Highschool. All rights reserved.</p>

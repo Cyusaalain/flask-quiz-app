@@ -4,6 +4,7 @@ from flask_login import LoginManager, login_user, login_required, logout_user, c
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
 from flask_login import UserMixin
+from wtforms import RadioField, SubmitField
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///quizapp.db'
@@ -65,6 +66,13 @@ class QuizResult(db.Model):
 
     student = db.relationship('User', backref='quiz_results')
     quiz = db.relationship('Quiz', backref='results')
+
+class QuizForm(FlaskForm):
+    choices = []
+    for i in range(10):  # Adjust the range based on the number of questions
+        choices.append((str(i), 'Option ' + str(i)))
+    question_0 = RadioField('Question 0', choices=choices)
+    submit = SubmitField('Submit Quiz')
 
 # Routes
 
@@ -445,34 +453,31 @@ def view_module(module_id):
 
     return render_template('student_module_view.html', module=module, quizzes=quizzes)
 
+#start quiz route
 @app.route('/student/quiz/<int:quiz_id>', methods=['GET', 'POST'])
 @login_required
 def start_quiz(quiz_id):
     if current_user.role != 'student':
         return redirect(url_for('teacher_dashboard'))
-
     quiz = Quiz.query.get(quiz_id)
-
-    # Check if quiz has questions
     if not quiz.questions:
         flash("No questions available for this quiz.")
         return redirect(url_for('student_dashboard'))
-
-    if request.method == 'POST':
+    
+    form = QuizForm()  # Create the form object
+    if form.validate_on_submit():
         print("Form Data: ", request.form)  # Debugging
         score = 0
         for index, question in enumerate(quiz.questions):
             user_answer = request.form.get(f'question-{index}')
             if user_answer == question.correct_answer:
                 score += 1
-
         new_result = QuizResult(student_id=current_user.id, quiz_id=quiz.id, score=score)
         db.session.add(new_result)
         db.session.commit()
-
         return render_template('student_result.html', score=score, total=len(quiz.questions))
-
-    return render_template('start_quiz.html', quiz=quiz, time_limit=quiz.time_limit, enumerate=enumerate)
+    
+    return render_template('start_quiz.html', quiz=quiz, time_limit=quiz.time_limit, form=form, enumerate=enumerate)
 
 # Run the app
 if __name__ == '__main__':
