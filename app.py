@@ -466,7 +466,7 @@ def start_quiz(quiz_id):
         return redirect(url_for('student_dashboard_view'))
 
     form = QuizForm()  # Create the form object
-    if form.validate_on_submit():
+    if form.validate_on_submit():   
         print("Form Data: ", request.form)
         score = 0
         for index, question in enumerate(quiz.questions):
