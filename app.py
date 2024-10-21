@@ -464,10 +464,10 @@ def start_quiz(quiz_id):
     if not quiz.questions:
         flash("No questions available for this quiz.")
         return redirect(url_for('student_dashboard_view'))
-    
+
     form = QuizForm()  # Create the form object
     if form.validate_on_submit():
-        print("Form Data: ", request.form)  # Debugging
+        print("Form Data: ", request.form)
         score = 0
         for index, question in enumerate(quiz.questions):
             user_answer = request.form.get(f'question-{index}')
@@ -477,7 +477,7 @@ def start_quiz(quiz_id):
         db.session.add(new_result)
         db.session.commit()
         return render_template('student_result.html', score=score, total=len(quiz.questions))
-    
+
     return render_template('start_quiz.html', quiz=quiz, time_limit=quiz.time_limit, form=form, enumerate=enumerate)
 
 # Run the app

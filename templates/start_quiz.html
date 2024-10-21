@@ -11,54 +11,54 @@
         <h1>{{ quiz.title }}</h1>
         <p>Time limit: {{ time_limit }} seconds</p>
         <!-- Quiz Form -->
-        <form id="quiz-form" action="" method="POST">
-            {{ form.hidden_tag() }}  <!-- Ensure CSRF token is included -->
+        <form id="quiz-form" action="{{ url_for('start_quiz', quiz_id=quiz.id) }}" method="POST">
+            {{ form.hidden_tag() }}
             {% for index, question in enumerate(quiz.questions) %}
-            <div class="form-group">
-                <label>{{ index + 1 }}. {{ question.question_text }}</label>
-                <div>
-                    {% for choice in question.choices.split(',') %}
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="question-{{ index }}" value="{{ choice }}" required>
-                        <label class="form-check-label">{{ choice }}</label>
+                <div class="form-group">
+                    <label>{{ index + 1 }}. {{ question.question_text }}</label>
+                    <div>
+                        {% for choice in question.choices.split(',') %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="question-{{ index }}" value="{{ choice }}" required>
+                                <label class="form-check-label">{{ choice }}</label>
+                            </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
-            </div>
             {% endfor %}
             <button id="submit-btn" type="submit" class="btn btn-primary">Submit Quiz</button>
         </form>
 
         <!-- Back to Dashboard Button -->
-        <a href="{{ url_for('student_dashboard_view') }}" class="btn btn-secondary mt-4">Back to Dashboard</a>    </div>
+        <a href="{{ url_for('student_dashboard_view') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+    </div>
     <!-- Timer Logic and Form Submission Handling -->
-    <!-- Timer Logic and Form Submission Handling -->
-<script>
-    let timeLeft = "{{ time_limit }}";
-    const timerElement = document.createElement('p');
-    document.body.insertBefore(timerElement, document.body.firstChild);
-    const form = document.getElementById('quiz-form');
-    const submitBtn = document.getElementById('submit-btn');
-    
-    function disableSubmit() {
-        submitBtn.disabled = true;
-    }
-    
-    const timerInterval = setInterval(() => {
-        timeLeft -= 1;
-        timerElement.textContent = `Time left: ${timeLeft} seconds`;
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            alert('Time is up! Your quiz will be submitted.');
-            disableSubmit();
-            form.submit();  // Automatically submit the form when time is up
+    <script>
+        let timeLeft = "{{ time_limit }}";
+        const timerElement = document.createElement('p');
+        document.body.insertBefore(timerElement, document.body.firstChild);
+        const form = document.getElementById('quiz-form');
+        const submitBtn = document.getElementById('submit-btn');
+
+        function disableSubmit() {
+            submitBtn.disabled = true;
         }
-    }, 1000);
-    
-    form.addEventListener('submit', (e) => {
-        disableSubmit();
-    });
-</script>
+
+        const timerInterval = setInterval(() => {
+            timeLeft -= 1;
+            timerElement.textContent = `Time left: ${timeLeft} seconds`;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                alert('Time is up! Your quiz will be submitted.');
+                disableSubmit();
+                form.submit();  // Automatically submit the form when time is up
+            }
+        }, 1000);
+
+        form.addEventListener('submit', (e) => {
+            disableSubmit();
+        });
+    </script>
     <!-- Footer -->
     <footer class="bg-dark text-white text-center py-3 mt-4">
         <p>© 2024 Cyusa Highschool. All rights reserved.</p>
