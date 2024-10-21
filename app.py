@@ -47,7 +47,7 @@ class Quiz(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     time_limit = db.Column(db.Integer, default=300)  # In seconds (5 minutes by default)
-    questions = db.relationship('Question', backref='quiz', lazy=True)
+    questions = db.relationship('Question', backref='quiz', lazy=True, cascade= "all, delete-orphan")
     module_id = db.Column(db.Integer, db.ForeignKey('module.id'), nullable=False)
 
 class Question(db.Model):
@@ -176,12 +176,18 @@ def delete_module(module_id):
         flash('Module not found.', 'error')
         return redirect(url_for('teacher_dashboard'))
 
-    # Manually delete quizzes associated with the module
-    Quiz.query.filter_by(module_id=module.id).delete()
-    
+    # Manually delete associated quizzes and questions
+    quizzes = Quiz.query.filter_by(module_id=module.id).all()
+    for quiz in quizzes:
+        # Delete associated questions first
+        Question.query.filter_by(quiz_id=quiz.id).delete()
+        db.session.delete(quiz)
+
+    # Finally, delete the module
     db.session.delete(module)
     db.session.commit()
-    flash('Module and associated quizzes deleted successfully!', 'success')
+
+    flash('Module and associated quizzes and questions deleted successfully!', 'success')
     return redirect(url_for('teacher_dashboard'))
 
 # Manage Module (Teacher)
