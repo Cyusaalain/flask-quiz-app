@@ -10,8 +10,8 @@
     <div class="container">
         <h2>{{ module.title }}</h2>
 
-        {% if quiz %}
-        <h2>Available Quizzes:</h2>
+        {% if quizzes %}
+        <h2>Available quizzes:</h2>
         <p><strong>Terms and Conditions:</strong> {{ module.terms_conditions }}</p>
         <ul>
             {% for quiz in quizzes %}
@@ -33,4 +33,4 @@
         <p>© 2024 Cyusa Highschool. All rights reserved.</p>
     </footer>
 </body>
-</htm
+</html>
