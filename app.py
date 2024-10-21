@@ -468,7 +468,7 @@ def start_quiz(quiz_id):
     form = QuizForm()
     user_answers = []
     if form.validate_on_submit():
-        print("Form Data: ", request.form) 
+        print("Form Data: ", request.form)  # Debugging print
         score = 0
         for index, question in enumerate(quiz.questions):
             user_answer = request.form.get(f'question-{index}')
@@ -485,6 +485,7 @@ def start_quiz(quiz_id):
         db.session.add(new_result)
         db.session.commit()
         return render_template('student_result.html', score=score, total=len(quiz.questions), user_answers=user_answers)
+    print("Form not valid or not submitted.")  # Debugging print
 
     return render_template('start_quiz.html', quiz=quiz, time_limit=quiz.time_limit, form=form, enumerate=enumerate)
 
