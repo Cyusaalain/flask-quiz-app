@@ -4,6 +4,7 @@ from flask_login import LoginManager, login_user, login_required, logout_user, c
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
 from flask_login import UserMixin
+from flask_wtf import FlaskForm 
 from wtforms import StringField, SubmitField, RadioField
 
 app = Flask(__name__)
