@@ -11,6 +11,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///quizapp.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'supersecretkey'
+app.config['WTF_CSRF_ENABLED'] = True
 
 # Initialize DB and Flask-Login
 db = SQLAlchemy(app)
@@ -64,15 +65,17 @@ class QuizResult(db.Model):
     student_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'))
     score = db.Column(db.Integer, nullable=False)
-
     student = db.relationship('User', backref='quiz_results')
     quiz = db.relationship('Quiz', backref='results')
 
 class QuizForm(FlaskForm):
-    choices = []
-    for i in range(10):  # Adjust the range based on the number of questions
-        choices.append((str(i), 'Option ' + str(i)))
-    question_0 = RadioField('Question 0', choices=choices)
+    # Dynamically generate fields for each question
+    def __init__(self, quiz, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for index, question in enumerate(quiz.questions):
+            field_name = f'question_{index}'
+            choices = [(choice, choice) for choice in question.choices.split(',')]
+            setattr(self, field_name, RadioField(question.question_text, choices=choices))
     submit = SubmitField('Submit Quiz')
 
 # Routes
@@ -465,13 +468,13 @@ def start_quiz(quiz_id):
         flash("No questions available for this quiz.")
         return redirect(url_for('student_dashboard_view'))
 
-    form = QuizForm()
-    user_answers = []
+    form = QuizForm(quiz)
     if form.validate_on_submit():
         print("Form Data: ", request.form)  # Debugging print
         score = 0
+        user_answers = []
         for index, question in enumerate(quiz.questions):
-            user_answer = request.form.get(f'question-{index}')
+            user_answer = form[f'question_{index}'].data
             is_correct = user_answer == question.correct_answer
             if is_correct:
                 score += 1
