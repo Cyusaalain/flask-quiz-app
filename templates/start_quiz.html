@@ -17,7 +17,7 @@
                 <div class="form-group">
                     <label for="question_{{ index }}">{{ index + 1 }}. {{ question.question_text }}</label>
                     <div>
-                        {{ form['question_' ~ loop.index0](id="question_" ~ index) }}  <!-- Properly linked label and field -->
+                        {{ form['question_' ~ loop.index0]() }}  <!-- Render the form field -->
                     </div>
                 </div>
             {% endfor %}
@@ -32,7 +32,7 @@
     <script>
         let timeLeft = parseInt("{{ time_limit }}");
         const timerElement = document.createElement('p');
-        timerElement.style.fontWeight = 'bold';  // Make the timer more prominent
+        timerElement.style.fontWeight = 'bold';
         timerElement.style.color = 'red';
         document.body.insertBefore(timerElement, document.body.firstChild);
 

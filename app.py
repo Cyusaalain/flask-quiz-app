@@ -6,6 +6,7 @@ from flask_migrate import Migrate
 from flask_login import UserMixin
 from flask_wtf import FlaskForm 
 from wtforms import SubmitField, RadioField
+from wtforms.validators import DataRequired
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///quizapp.db'
@@ -459,39 +460,25 @@ def view_module(module_id):
 
 #start quiz route
 @app.route('/student/quiz/<int:quiz_id>', methods=['GET', 'POST'])
-@login_required
 def start_quiz(quiz_id):
-    if current_user.role != 'student':
-        return redirect(url_for('teacher_dashboard'))
     quiz = Quiz.query.get(quiz_id)
-    if not quiz.questions:
-        flash("No questions available for this quiz.")
-        return redirect(url_for('student_dashboard_view'))
+    form = QuizForm()
 
-    form = QuizForm(quiz)
+    # Dynamically add form fields based on the quiz questions
+    for index, question in enumerate(quiz.questions):
+        field_name = f'question_{index}'
+        form_field = RadioField(
+            question.question_text, 
+            choices=[(option.id, option.text) for option in question.options],
+            validators=[DataRequired()]  # Applying DataRequired validator here
+        )
+        setattr(form, field_name, form_field)  # Dynamically bind the field to the form
+
     if form.validate_on_submit():
-        print("Form validated successfully!")
-        score = 0
-        user_answers = []
-        for index, question in enumerate(quiz.questions):
-            print(f"Question {index}: {question.question_text} - Choices: {question.choices}")
-            user_answer = form[f'question_{index}'].data
-            is_correct = user_answer == question.correct_answer
-            if is_correct:
-                score += 1
-            user_answers.append({
-                'question': question.question_text,
-                'user_answer': user_answer,
-                'correct_answer': question.correct_answer,
-                'is_correct': is_correct
-            })
-        new_result = QuizResult(student_id=current_user.id, quiz_id=quiz.id, score=score)
-        db.session.add(new_result)
-        db.session.commit()
-        return render_template('student_result.html', score=score, total=len(quiz.questions), user_answers=user_answers)
-    print("Form not valid or not submitted.")  # Debugging print
+        # Process the form submission here
+        pass
 
-    return render_template('start_quiz.html', quiz=quiz, time_limit=quiz.time_limit, form=form, enumerate=enumerate)
+    return render_template('start_quiz.html', quiz=quiz, time_limit=quiz.time_limit, form=form)
 
 # Run the app
 if __name__ == '__main__':
