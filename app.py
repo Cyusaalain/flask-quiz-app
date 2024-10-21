@@ -41,7 +41,7 @@ class Module(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     terms_conditions = db.Column(db.Text, nullable=False)
-    quizzes = db.relationship('Quiz', backref='module', lazy=True)
+    quizzes = db.relationship('Quiz', backref='module', lazy=True, cascade="all, delete-orphan")
 
 class Quiz(db.Model):
     id = db.Column(db.Integer, primary_key=True)
