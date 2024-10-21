@@ -4,7 +4,7 @@ from flask_login import LoginManager, login_user, login_required, logout_user, c
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_migrate import Migrate
 from flask_login import UserMixin
-from wtforms import RadioField, SubmitField
+from wtforms import RadioField, SubmitField # type: ignore
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///quizapp.db'

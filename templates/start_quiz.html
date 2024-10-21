@@ -33,32 +33,33 @@
         <a href="{{ url_for('student_dashboard') }}" class="btn btn-secondary mt-4">Back to Dashboard</a>
     </div>
     <!-- Timer Logic and Form Submission Handling -->
-    <script>
-        let timeLeft = {{ time_limit }};
-        const timerElement = document.createElement('p');
-        document.body.insertBefore(timerElement, document.body.firstChild);
-        const form = document.getElementById('quiz-form');
-        const submitBtn = document.getElementById('submit-btn');
-        
-        function disableSubmit() {
-            submitBtn.disabled = true;
-        }
-        
-        const timerInterval = setInterval(() => {
-            timeLeft -= 1;
-            timerElement.textContent = `Time left: ${timeLeft} seconds`;
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                alert('Time is up! Your quiz will be submitted.');
-                disableSubmit();
-                form.submit();  // Automatically submit the form when time is up
-            }
-        }, 1000);
-        
-        form.addEventListener('submit', (e) => {
+    <!-- Timer Logic and Form Submission Handling -->
+<script>
+    let timeLeft = "{{ time_limit }}";
+    const timerElement = document.createElement('p');
+    document.body.insertBefore(timerElement, document.body.firstChild);
+    const form = document.getElementById('quiz-form');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    function disableSubmit() {
+        submitBtn.disabled = true;
+    }
+    
+    const timerInterval = setInterval(() => {
+        timeLeft -= 1;
+        timerElement.textContent = `Time left: ${timeLeft} seconds`;
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            alert('Time is up! Your quiz will be submitted.');
             disableSubmit();
-        });
-    </script>
+            form.submit();  // Automatically submit the form when time is up
+        }
+    }, 1000);
+    
+    form.addEventListener('submit', (e) => {
+        disableSubmit();
+    });
+</script>
     <!-- Footer -->
     <footer class="bg-dark text-white text-center py-3 mt-4">
         <p>© 2024 Cyusa Highschool. All rights reserved.</p>
