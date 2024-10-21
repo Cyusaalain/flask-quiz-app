@@ -199,6 +199,7 @@ def manage_module(module_id):
         quiz = Quiz(title=f"{module.title} Quiz", module_id=module_id)
         db.session.add(quiz)
         db.session.commit()
+    print(f"Quiz created: {quiz.title} for module {quiz.module_id}")
 
     all_students = User.query.filter_by(role='student').all()
     assigned_students = module.students
