@@ -74,6 +74,7 @@ class QuizForm(FlaskForm):
         for index, question in enumerate(quiz.questions):
             field_name = f'question_{index}'
             choices = [(choice, choice) for choice in question.choices.split(',')]
+            # Dynamically set fields for each question
             setattr(self, field_name, RadioField(question.question_text, choices=choices))
     submit = SubmitField('Submit Quiz')
 
@@ -469,10 +470,11 @@ def start_quiz(quiz_id):
 
     form = QuizForm(quiz)
     if form.validate_on_submit():
-        print("Form Data: ", request.form)  # Debugging print
+        print("Form validated successfully!")
         score = 0
         user_answers = []
         for index, question in enumerate(quiz.questions):
+            print(f"Question {index}: {question.question_text} - Choices: {question.choices}")
             user_answer = form[f'question_{index}'].data
             is_correct = user_answer == question.correct_answer
             if is_correct:

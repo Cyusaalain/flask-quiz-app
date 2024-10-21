@@ -15,10 +15,9 @@
             {{ form.hidden_tag() }}
             {% for index, question in enumerate(quiz.questions) %}
                 <div class="form-group">
-                    <label>{{ index + 1 }}. {{ question.question_text }}</label>
+                    <label for="question_{{ index }}">{{ index + 1 }}. {{ question.question_text }}</label>
                     <div>
-                        {{ form['question_' ~ loop.index0].label }}
-                        {{ form['question_' ~ loop.index0] }}
+                        {{ form['question_' ~ loop.index0](id="question_" ~ index) }}  <!-- Properly linked label and field -->
                     </div>
                 </div>
             {% endfor %}
@@ -28,11 +27,15 @@
         <!-- Back to Dashboard Button -->
         <a href="{{ url_for('student_dashboard_view') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
     </div>
+
     <!-- Timer Logic and Form Submission Handling -->
     <script>
-        let timeLeft = "{{ time_limit }}";
+        let timeLeft = parseInt("{{ time_limit }}");
         const timerElement = document.createElement('p');
+        timerElement.style.fontWeight = 'bold';  // Make the timer more prominent
+        timerElement.style.color = 'red';
         document.body.insertBefore(timerElement, document.body.firstChild);
+
         const form = document.getElementById('quiz-form');
         const submitBtn = document.getElementById('submit-btn');
 
@@ -53,8 +56,10 @@
 
         form.addEventListener('submit', (e) => {
             disableSubmit();
+            clearInterval(timerInterval);  // Stop the timer when form is submitted
         });
     </script>
+
     <!-- Footer -->
     <footer class="bg-dark text-white text-center py-3 mt-4">
         <p>© 2024 Cyusa Highschool. All rights reserved.</p>
