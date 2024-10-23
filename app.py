@@ -459,25 +459,36 @@ def view_module(module_id):
     return render_template('student_module_view.html', module=module, quizzes=quizzes)
 
 #start quiz route
+# start_quiz route with dynamic form generation
 @app.route('/student/quiz/<int:quiz_id>', methods=['GET', 'POST'])
 @login_required
 def start_quiz(quiz_id):
     quiz = Quiz.query.get_or_404(quiz_id)
-    form = QuizForm(quiz)
+    form = QuizForm(quiz=quiz)
 
     if form.validate_on_submit():
         score = 0
+        user_answers = []
         for index, question in enumerate(quiz.questions):
             user_answer = form[f'question_{index}'].data
-            if user_answer == question.correct_answer:
+            is_correct = user_answer == question.correct_answer
+            if is_correct:
                 score += 1
+            user_answers.append({
+                'question': question.question_text,
+                'user_answer': user_answer,
+                'correct_answer': question.correct_answer,
+                'is_correct': is_correct
+            })
+
+        # Save result to the database
         new_result = QuizResult(student_id=current_user.id, quiz_id=quiz.id, score=score)
         db.session.add(new_result)
         db.session.commit()
-        return render_template('student_result.html', score=score, total=len(quiz.questions))
-    
-    return render_template('start_quiz.html', quiz=quiz, time_limit=quiz.time_limit, form=form)
 
+        return render_template('student_result.html', score=score, total=len(quiz.questions), user_answers=user_answers)
+
+    return render_template('start_quiz.html', quiz=quiz, time_limit=quiz.time_limit, form=form)
 # Run the app
 if __name__ == '__main__':
     app.run(debug=True)
