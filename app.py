@@ -57,7 +57,7 @@ class Quiz(db.Model):
 class Question(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     question_text = db.Column(db.String(255), nullable=False)
-    choices = db.Column(db.String(255), nullable=False)  rated choices
+    choices = db.Column(db.String(255), nullable=False)
     correct_answer = db.Column(db.String(100), nullable=False)
     quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), nullable=False)
 
@@ -74,13 +74,10 @@ class QuizForm(FlaskForm):
         super(QuizForm, self).__init__(*args, **kwargs)
         for index, question in enumerate(quiz.questions):
             field_name = f'question_{index}'
-            # Dynamically create form fields for each quiz question
-            field = RadioField(
-                label=question.question_text,
-                choices=[(str(option.id), option.text) for option in question.options],
-                validators=[DataRequired()]  # Apply DataRequired to enforce answer selection
-            )
-            setattr(self, field_name, field)
+            # Split the choices from the comma-separated string
+            choices = [(choice, choice) for choice in question.choices.split(',')]
+            setattr(self, field_name, RadioField(question.question_text, choices=choices, validators=[DataRequired()]))
+    submit = SubmitField('Submit Quiz')
 
 # Routes
 
@@ -463,24 +460,22 @@ def view_module(module_id):
 
 #start quiz route
 @app.route('/student/quiz/<int:quiz_id>', methods=['GET', 'POST'])
+@login_required
 def start_quiz(quiz_id):
-    quiz = Quiz.query.get(quiz_id)
-    form = QuizForm()
-
-    # Dynamically add form fields based on the quiz questions
-    for index, question in enumerate(quiz.questions):
-        field_name = f'question_{index}'
-        form_field = RadioField(
-            question.question_text, 
-            choices=[(option.id, option.text) for option in question.options],
-            validators=[DataRequired()]  # Applying DataRequired validator here
-        )
-        setattr(form, field_name, form_field)  # Dynamically bind the field to the form
+    quiz = Quiz.query.get_or_404(quiz_id)
+    form = QuizForm(quiz)
 
     if form.validate_on_submit():
-        # Process the form submission here
-        pass
-
+        score = 0
+        for index, question in enumerate(quiz.questions):
+            user_answer = form[f'question_{index}'].data
+            if user_answer == question.correct_answer:
+                score += 1
+        new_result = QuizResult(student_id=current_user.id, quiz_id=quiz.id, score=score)
+        db.session.add(new_result)
+        db.session.commit()
+        return render_template('student_result.html', score=score, total=len(quiz.questions))
+    
     return render_template('start_quiz.html', quiz=quiz, time_limit=quiz.time_limit, form=form)
 
 # Run the app
