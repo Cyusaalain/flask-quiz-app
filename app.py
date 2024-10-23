@@ -38,7 +38,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
-    role = db.Column(db.String(20), nullable=False)  # 'teacher' or 'student'
+    role = db.Column(db.String(20), nullable=False) 
     modules = db.relationship('Module', secondary=student_module, backref='students')
 
 class Module(db.Model):
@@ -57,7 +57,7 @@ class Quiz(db.Model):
 class Question(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     question_text = db.Column(db.String(255), nullable=False)
-    choices = db.Column(db.String(255), nullable=False)  # Comma-separated choices
+    choices = db.Column(db.String(255), nullable=False)  rated choices
     correct_answer = db.Column(db.String(100), nullable=False)
     quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), nullable=False)
 
@@ -71,13 +71,16 @@ class QuizResult(db.Model):
 
 class QuizForm(FlaskForm):
     def __init__(self, quiz, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(QuizForm, self).__init__(*args, **kwargs)
         for index, question in enumerate(quiz.questions):
             field_name = f'question_{index}'
-            choices = [(choice, choice) for choice in question.choices.split(',')]
-            # Dynamically set fields for each question
-            setattr(self, field_name, RadioField(question.question_text, choices=choices))
-    submit = SubmitField('Submit Quiz')
+            # Dynamically create form fields for each quiz question
+            field = RadioField(
+                label=question.question_text,
+                choices=[(str(option.id), option.text) for option in question.options],
+                validators=[DataRequired()]  # Apply DataRequired to enforce answer selection
+            )
+            setattr(self, field_name, field)
 
 # Routes
 
