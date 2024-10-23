@@ -10,14 +10,15 @@
     <div class="container">
         <h1>{{ quiz.title }}</h1>
         <p>Time limit: {{ time_limit }} seconds</p>
+
         <!-- Quiz Form -->
         <form id="quiz-form" action="{{ url_for('start_quiz', quiz_id=quiz.id) }}" method="POST">
             {{ form.hidden_tag() }}
-            {% for index, questions in quiz.questions %}
+            {% for index, question in enumerate(quiz.questions) %} 
                 <div class="form-group">
                     <label for="question_{{ index }}">{{ index + 1 }}. {{ question.question_text }}</label>
                     <div>
-                        {{ form['question_' ~ loop.index0]() }}  <!-- Dynamically render the form field for each question -->
+                        {{ form['question_' ~ index]() }} 
                     </div>
                 </div>
             {% endfor %}
@@ -50,7 +51,7 @@
                 clearInterval(timerInterval);
                 alert('Time is up! Your quiz will be submitted.');
                 disableSubmit();
-                form.submit();  // Automatically submit the form when time is up
+                form.submit(); 
             }
         }, 1000);
 
