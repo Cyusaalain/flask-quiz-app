@@ -463,17 +463,31 @@ def view_module(module_id):
 @app.route('/student/quiz/<int:quiz_id>', methods=['GET', 'POST'])
 @login_required
 def start_quiz(quiz_id):
-    quiz = Quiz.query.get_or_404(quiz_id)
-    form = QuizForm(quiz=quiz)
+    # Fetch the quiz from the database
+    quiz = Quiz.query.get(quiz_id)
 
+    # Debug: Check if questions are returned as a list
+    print("Questions in the quiz:", quiz.questions)  # This will print the list of questions
+
+    # If no questions are available for the quiz
+    if not quiz.questions:
+        flash("No questions available for this quiz.", "error")
+        return redirect(url_for('student_dashboard_view'))
+
+    # Create the form dynamically with the questions in the quiz
+    form = QuizForm(quiz=quiz)  # Passing the quiz to the form constructor
+
+    # Check if the form was submitted and is valid
     if form.validate_on_submit():
-        score = 0
+        print("Form Data: ", request.form)  # Debugging print
+        score = 0 
         user_answers = []
+
         for index, question in enumerate(quiz.questions):
             user_answer = form[f'question_{index}'].data
-            is_correct = user_answer == question.correct_answer
+            is_correct = user_answer == question.correct_answer,
             if is_correct:
-                score += 1
+                score += 1 
             user_answers.append({
                 'question': question.question_text,
                 'user_answer': user_answer,
@@ -481,7 +495,6 @@ def start_quiz(quiz_id):
                 'is_correct': is_correct
             })
 
-        # Save result to the database
         new_result = QuizResult(student_id=current_user.id, quiz_id=quiz.id, score=score)
         db.session.add(new_result)
         db.session.commit()
