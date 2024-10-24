@@ -74,7 +74,6 @@ class QuizForm(FlaskForm):
         super(QuizForm, self).__init__(*args, **kwargs)
         for index, question in enumerate(quiz.questions):
             field_name = f'question_{index}'
-            # Split the choices from the comma-separated string
             choices = [(choice, choice) for choice in question.choices.split(',')]
             setattr(self, field_name, RadioField(question.question_text, choices=choices, validators=[DataRequired()]))
     submit = SubmitField('Submit Quiz')
@@ -165,7 +164,6 @@ def set_terms_conditions(module_id):
     
     module = Module.query.get_or_404(module_id)
     
-    # Fetch the updated terms and conditions from the form
     terms_conditions = request.form['terms_conditions']
     
     if terms_conditions:
@@ -189,14 +187,11 @@ def delete_module(module_id):
         flash('Module not found.', 'error')
         return redirect(url_for('teacher_dashboard'))
 
-    # Manually delete associated quizzes and questions
     quizzes = Quiz.query.filter_by(module_id=module.id).all()
     for quiz in quizzes:
-        # Delete associated questions first
         Question.query.filter_by(quiz_id=quiz.id).delete()
         db.session.delete(quiz)
 
-    # Finally, delete the module
     db.session.delete(module)
     db.session.commit()
 
@@ -231,7 +226,6 @@ def manage_module(module_id):
             choices = ','.join(request.form.getlist('choices'))
             correct_answer = request.form['correct_answer']
             
-            # Ensure quiz exists for the module
             new_question = Question(
                 question_text=question_text,
                 choices=choices,
@@ -260,6 +254,7 @@ def manage_module(module_id):
     pass
     
     return render_template('manage_module.html', module=module, assigned_students=assigned_students, unassigned_students=unassigned_students)
+
 # Assign Students to a Module
 @app.route('/teacher/module/<int:module_id>/assign-students', methods=['POST'])
 @login_required
@@ -324,10 +319,10 @@ def add_question(module_id):
         return redirect(url_for('login'))
     
     question_text = request.form['question_text']
-    choices = request.form.getlist('choices[]')  # Important to match the name in the form
+    choices = request.form.getlist('choices[]')  
     correct_answer = request.form['correct_answer']
     
-    # Ensure all fields are filled
+    
     if not question_text or not choices or not correct_answer:
         flash('Please fill in all fields.', 'error')
         return redirect(url_for('manage_module', module_id=module_id))
@@ -355,7 +350,7 @@ def add_question(module_id):
 # Add a debug route
 @app.route('/debug_quizzes')
 def debug_quizzes():
-    quizzes = Quiz.query.all()  # Fetch all quizzes from the database
+    quizzes = Quiz.query.all() 
     result = []
     for quiz in quizzes:
         questions = [{'question_text': q.question_text, 'choices': q.choices, 'correct_answer': q.correct_answer} for q in quiz.questions]
@@ -388,7 +383,7 @@ def set_timer(module_id):
     # Get the time limit from the form and update the quiz's time limit
     time_limit = request.form['time_limit']
     try:
-        quiz.time_limit = int(time_limit)  # Update the quiz time limit
+        quiz.time_limit = int(time_limit) 
         db.session.commit()
         flash(f'Timer set to {time_limit} seconds for the quiz.', 'success')
     except ValueError:
@@ -440,13 +435,12 @@ def view_module(module_id):
 
     module = Module.query.get(module_id)
 
-    # Ensure quizzes are correctly fetched
     quizzes = module.quizzes
     print(f"Quizzes found: {quizzes}")  # Debugging
 
     if request.method == 'POST':
-        if quizzes:  # Ensure there's at least one quiz
-            quiz_id = quizzes[0].id  # Assuming there's one quiz per module
+        if quizzes: 
+            quiz_id = quizzes[0].id 
             return redirect(url_for('start_quiz', quiz_id=quiz_id))
         else:
             flash("No quizzes found for this module.", "error")
@@ -459,27 +453,24 @@ def view_module(module_id):
     return render_template('student_module_view.html', module=module, quizzes=quizzes)
 
 #start quiz route
-# start_quiz route with dynamic form generation
 @app.route('/student/quiz/<int:quiz_id>', methods=['GET', 'POST'])
 @login_required
 def start_quiz(quiz_id):
-    # Fetch the quiz from the database
+
     quiz = Quiz.query.get(quiz_id)
 
-    # Debug: Check if questions are returned as a list
-    print("Questions in the quiz:", quiz.questions)  # This will print the list of questions
+    print("Questions in the quiz:", quiz.questions)  
 
-    # If no questions are available for the quiz
     if not quiz.questions:
         flash("No questions available for this quiz.", "error")
         return redirect(url_for('student_dashboard_view'))
 
-    # Create the form dynamically with the questions in the quiz
-    form = QuizForm(quiz=quiz)  # Passing the quiz to the form constructor
+    
+    form = QuizForm(quiz=quiz)  
 
-    # Check if the form was submitted and is valid
+   
     if form.validate_on_submit():
-        print("Form Data: ", request.form)  # Debugging print
+        print("Form Data: ", request.form)  
         score = 0 
         user_answers = []
 
